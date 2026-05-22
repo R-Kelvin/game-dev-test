@@ -1,410 +1,37 @@
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+import type { SpriteKey } from './data/sprites';
+import { sprites } from './data/sprites';
+
 import {
   Animated,
   Dimensions,
   Image,
-  Modal,
   Platform,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+import { CandyChoices } from './components/CandyChoices';
+import { DialogueBox } from './components/DialogueBox';
+import { NarrativeChoices } from './components/NarrativeChoices';
+import { SettingsModal } from './components/SettingsModal';
+import { SpriteRenderer } from './components/SpriteRenderer';
+import type { CenaKey, CorBala } from './data/cenas';
+import { cenas } from './data/cenas';
+import type { Dialogo, EscolhaNarrativa } from './data/types';
+import { gameStyles } from './styles/gameStyles';
+
 
 const { width } = Dimensions.get('window');
 
-const sprites = {
-  aiko_seria: require('../../assets/aiko_seria.png'),
-  aiko_timida: require('../../assets/aiko_timida.png'),
-  aiko_tchau: require('../../assets/aiko_tchau.png'),
-  aiko_curiosa: require('../../assets/aiko_curiosa.png'),
-  aiko_rindo: require('../../assets/aiko_rindo.png'),
-  aiko_procurando: require('../../assets/aiko_procurando.png'),
-  aiko_guardachuvaL: require('../../assets/aiko_guardachuvaL.png'),
-  aiko_sorrisoleve: require('../../assets/aiko_sorrisoleve.png'),
-  aiko_apreensiva: require('../../assets/aiko_apreensiva.png'),
-
-  rin_curious: require('../../assets/rin_curious.png'),
-  rin_badsurprise: require('../../assets/rin_badsurprise.png'),
-  rin_medo: require('../../assets/rin_medo.png'),
-  rin_falando: require('../../assets/rin_falando.png'),
-  rin_normal: require('../../assets/rin_normal.png'),
-  rin_tchau: require('../../assets/rin_tchau.png'),
-
-  misuki_normal: require('../../assets/misuki_normal.png'),
-  misuki_falando: require('../../assets/misuki_falando.png'),
-  misuki_tchau: require('../../assets/misuki_tchau.png'),
-  misuki_curious: require('../../assets/misuki_curious.png'),
-
-  vendedor_serio: require('../../assets/vendedor_serio.png'),
-  vendedor_explicando: require('../../assets/vendedor_explicando.png'),
-} as const;
-
-type SpriteKey = keyof typeof sprites;
-
-const cenas = {
-  cena1: {
-    background: require('../../assets/apreseinicial.png'),
-    proxima: 'cena2',
-    dialogos: [
-      { nome: '', texto: '*A luz do fim de tarde entra pela janela, desenhando sombras longas sobre as mesas.*' },
-      { nome: '', texto: '*O barulho da aula parece distante… como se não fosse comigo.*' },
-      { nome: '', texto: 'Mais um dia acabando...' },
-      { nome: '', texto: '*Meu olhar escapa para fora da sala.*' },
-      { nome: '', texto: '*Lá embaixo, as pessoas caminham pela rua sem parar.*' },
-      { nome: '', texto: 'Elas vão e voltam… como se já soubessem exatamente pra onde ir.' },
-      { nome: '', texto: '*Carros passam. Pessoas atravessam. Algumas conversam, outras só seguem em frente.*' },
-      { nome: '', texto: 'Todo mundo parece tão decidido… mesmo quando não está.' },
-      { nome: '', texto: '*Apoio o queixo na mão, observando.*' },
-      { nome: '', texto: 'Fico imaginando o caminho que cada pessoa percorreu até passar por aqui...' },
-      { nome: '', texto: 'Quantas ruas… quantas escolhas… quantos dias iguais a esse.' },
-      { nome: '', texto: '*Uma leve brisa entra pela janela, fazendo as cortinas se moverem devagar.*' },
-      { nome: '', texto: 'É estranho pensar que cada uma dessas pessoas tem uma vida inteira acontecendo.' },
-      { nome: '', texto: 'Problemas… planos… preocupações...' },
-      { nome: '', texto: '*Fecho os olhos por um instante.*' },
-      { nome: '', texto: 'Tudo tão… próprio.' },
-      { nome: '', texto: 'Tão distante de mim.' },
-      { nome: '', texto: '*O som do professor ao fundo vira apenas um ruído.*' },
-      { nome: '', texto: 'Eu poderia ficar aqui olhando por horas...' },
-      { nome: '', texto: '*Abro os olhos novamente.*' },
-      { nome: '', texto: 'Me pergunto se um dia eu vou ser assim também...' },
-      { nome: '', texto: 'Uma adulta com certeza.' },
-      { nome: '', texto: 'Com um caminho definido.' },
-      { nome: '', texto: 'Sem precisar pensar tanto.' },
-      { nome: '', texto: '*Um som mais alto invade a sala — cadeiras sendo arrastadas.*' },
-      { nome: '', texto: '*Conversas começam a surgir ao redor.*' },
-      { nome: '', texto: 'A aula acabou...' },
-      { nome: '', texto: 'E eu nem percebi.' },
-      { nome: '', texto: '*Os alunos começam a sair, passando por mim.*' },
-      { nome: '', texto: '*Eu demoro um pouco mais para me levantar.*' },
-      { nome: '', texto: '*Por um instante…*' },
-      { nome: '', texto: '*Sinto como se tivesse esquecido alguma coisa.*' },
-      { nome: '', texto: '*Olho ao redor da sala rapidamente.*' },
-      { nome: '', texto: '*Mas tudo parece normal.*' },
-      { nome: '', texto: '*Então apenas ignoro.*' },
-      { nome: '', texto: '*Pego minha bolsa.*' },
-      { nome: '', texto: '*E caminho em direção à porta.*' },
-    ],
-  },
-
-  cena2: {
-    background: require('../../assets/saidaescola.png'),
-    proxima: 'cena3',
-    dialogos: [
-      { nome: '', texto: '*Saio da escola junto com os últimos alunos.*' },
-      { nome: '', texto: '*O céu já está escurecendo.*' },
-      { nome: '', texto: '*A luz do fim de tarde desapareceu quase sem que eu percebesse.*' },
-      { nome: '', texto: '*Alguns grupos conversam perto do portão.*' },
-      { nome: '', texto: '*Outros já seguem seus próprios caminhos.*' },
-      { nome: 'Rin', texto: 'Aiko!', sprite: 'rin_falando' },
-      { nome: '', texto: '*Viro o rosto.*', manterSprites: ['rin_curious', 'misuki_curious'] },
-      { nome: 'Misuki', texto: 'Você já vai?', sprite: 'misuki_falando' },
-      {
-        nome: 'Aiko',
-        texto: 'Vou… preciso passar em um lugar pra minha mãe antes de ir pra casa.',
-        sprite: 'aiko_seria',
-      },
-      { nome: 'Rin', texto: 'De novo isso?', sprite: 'rin_curious' },
-      {
-        nome: '',
-        texto: '*Dou de ombros, olhando rapidamente pra rua.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      {
-        nome: 'Aiko',
-        texto: 'Algumas lâmpadas queimaram… então preciso comprar.',
-        sprite: 'aiko_seria',
-      },
-      { nome: 'Misuki', texto: 'Onde é? A gente pode ir junto.', sprite: 'misuki_curious' },
-      {
-        nome: '',
-        texto: '*Hesito por um instante.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      {
-        nome: 'Aiko',
-        texto: 'É bem perto da minha casa… vocês não iam pelo mesmo caminho.',
-        sprite: 'aiko_apreensiva',
-      },
-      { nome: 'Rin', texto: 'Hmm…', sprite: 'rin_curious' },
-      {
-        nome: '',
-        texto: '*Rin observa meu rosto como se tentasse entender melhor.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      { nome: 'Misuki', texto: 'Mas a gente podia ir com você um dia.', sprite: 'misuki_falando' },
-      { nome: 'Aiko', texto: 'Não precisa… sério.', sprite: 'aiko_seria' },
-      {
-        nome: '',
-        texto: '*Respondo mais rápido do que devia.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      {
-        nome: '',
-        texto: '*Percebo isso um segundo depois.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      {
-        nome: 'Aiko',
-        texto: 'Quer dizer… não tem nada demais lá.',
-        sprite: 'aiko_timida',
-      },
-      { nome: 'Rin', texto: 'Então qual o problema?', sprite: 'rin_falando' },
-      {
-        nome: '',
-        texto: '*Fico em silêncio por um instante.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      {
-        nome: 'Aiko',
-        texto: 'Acho que… eu só prefiro ir sozinha.',
-        sprite: 'aiko_timida',
-      },
-      { nome: 'Misuki', texto: 'Ah…', sprite: 'misuki_normal' },
-      {
-        nome: '',
-        texto: '*Misuki não insiste.*',
-        manterSprites: ['rin_curious', 'misuki_curious'],
-      },
-      { nome: 'Rin', texto: 'Bom… então toma cuidado.', sprite: 'rin_normal' },
-      {
-        nome: '',
-        texto: '*Rin aponta com o queixo pra rua.*',
-        manterSprites: ['rin_normal', 'misuki_curious'],
-      },
-      { nome: 'Rin', texto: 'Já tá ficando meio vazio.', sprite: 'rin_normal' },
-      {
-        nome: '',
-        texto: '*Olho na mesma direção.*',
-        manterSprites: ['rin_normal', 'misuki_curious'],
-      },
-      {
-        nome: '',
-        texto: '*Algumas pessoas ainda passam… mas bem menos do que antes.*',
-        manterSprites: ['rin_normal', 'misuki_curious'],
-      },
-      { nome: 'Aiko', texto: 'Eu tô acostumada.', sprite: 'aiko_seria' },
-      { nome: 'Misuki', texto: 'Mesmo assim.', sprite: 'misuki_falando' },
-      { nome: 'Aiko', texto: 'Tá bom.', sprite: 'aiko_sorrisoleve' },
-      {
-        nome: '',
-        texto: '*Elas acenam.*',
-        manterSprites: ['rin_tchau', 'misuki_tchau'],
-      },
-      { nome: 'Misuki', texto: 'Até amanhã, Aiko.', sprite: 'misuki_tchau' },
-      { nome: 'Aiko', texto: 'Até.', sprite: 'aiko_tchau' },
-      { nome: '', texto: '*Começo a andar.*' },
-      { nome: '', texto: '*Depois de alguns passos…*' },
-      { nome: '', texto: '*Sinto que ainda estão me olhando.*' },
-      { nome: '', texto: '*Como se quisessem dizer mais alguma coisa.*' },
-      { nome: '', texto: '*Mas não dizem.*' },
-      { nome: '', texto: '*E eu também não paro.*' },
-      { nome: '', texto: '*Só continuo andando.*' },
-    ],
-  },
-
-  cena3: {
-    background: require('../../assets/PO2.png'),
-    proxima: 'cena4',
-    dialogos: [
-      { nome: '', texto: '*A rua está mais silenciosa agora.*' },
-      { nome: '', texto: '*O movimento da escola ficou para trás.*' },
-      { nome: '', texto: '*As luzes dos postes refletem no asfalto molhado.*' },
-      { nome: '', texto: '*Um ônibus se aproxima ao longe.*' },
-      { nome: '', texto: '*O som do motor quebra o silêncio por alguns segundos.*' },
-      { nome: 'Aiko', texto: 'Ainda passa ônibus essa hora…', sprite: 'aiko_seria' },
-      { nome: '', texto: '*Diminuo o passo ao me aproximar do ponto.*' },
-      { nome: '', texto: '*Tem apenas uma mulher lá…*' },
-      { nome: '', texto: '*Mas não presto muita atenção.*' },
-      { nome: '', texto: '*Só de relance.*' },
-      { nome: 'Aiko', texto: '…', sprite: 'aiko_curiosa' },
-      { nome: '', texto: '*O ônibus passa direto.*' },
-      { nome: '', texto: '*Sem parar.*' },
-      { nome: '', texto: '*Continuo andando.*' },
-    ],
-  },
-
-  cena4: {
-    background: require('../../assets/beco2.png'),
-    proxima: 'cena5',
-    dialogos: [
-      { nome: '', texto: '*O caminho vai ficando mais vazio.*' },
-      { nome: '', texto: '*As casas ficam mais próximas umas das outras.*' },
-      { nome: '', texto: '*As luzes… mais fracas.*' },
-      { nome: '', texto: '*Paro por um instante na entrada do beco.*' },
-      { nome: 'Aiko', texto: '…', sprite: 'aiko_curiosa' },
-      { nome: '', texto: '*É o mesmo caminho de sempre.*' },
-      { nome: '', texto: '*Mas…*' },
-      { nome: '', texto: '*Escuro demais.*' },
-      { nome: '', texto: '*Levo a mão até a bolsa.*' },
-      { nome: '', texto: '*Tiro a lanterna.*' },
-      { nome: '', texto: '*Pressiono o botão.*' },
-      { nome: '', texto: '*A luz acende… fraca.*' },
-      { nome: '', texto: '*Pisca uma vez.*' },
-      { nome: 'Aiko', texto: 'De novo não…', sprite: 'aiko_procurando' },
-      { nome: '', texto: '*Dou uma leve batida nela.*' },
-      { nome: '', texto: '*A luz estabiliza.*' },
-      { nome: 'Aiko', texto: '…', sprite: 'aiko_procurando' },
-      { nome: '', texto: '*Aponto a lanterna para dentro do beco.*' },
-      { nome: '', texto: '*A luz não alcança muito longe.*' },
-      { nome: '', texto: '*Mesmo assim…*' },
-      { nome: '', texto: '*Começo a andar.*' },
-      { nome: '', texto: '*O som dos meus passos ecoa mais do que deveria.*' },
-      { nome: '', texto: '*Como se o espaço fosse maior do que parece.*' },
-      { nome: '', texto: '*Aperto a lanterna com mais força.*' },
-      { nome: '', texto: '*E sigo em frente.*' },
-    ],
-  },
-
-  cena5: {
-    background: require('../../assets/beco1.png'),
-    proxima: 'cena6',
-    dialogos: [
-      { nome: '', texto: '*No final do beco…*' },
-      { nome: '', texto: '*A luz aparece.*' },
-      { nome: '', texto: '*Quente.*' },
-      { nome: '', texto: '*Por sorte, essa loja fecha tarde.*' },
-    ],
-  },
-
-  cena6: {
-    background: require('../../assets/lightshop.png'),
-    proxima: 'cena7',
-    dialogos: [
-      { nome: '', texto: '*Empurro a porta.*' },
-      { nome: '', texto: '*Um pequeno sino toca.*' },
-      { nome: '', texto: '*O calor me envolve imediatamente.*' },
-      { nome: '', texto: '*As luzes preenchem todo o espaço.*' },
-      { nome: '', texto: '*É difícil olhar para um ponto só.*' },
-      { nome: '', texto: '*As luzes quase fazem meus olhos arderem.*' },
-      { nome: '', texto: '*Deve ser por isso que o vendedor usa óculos aqui dentro.*' },
-      { nome: 'Aiko', texto: '…', sprite: 'aiko_curiosa' },
-      { nome: '', texto: '*Dou alguns passos para dentro.*' },
-      { nome: 'Vendedor', texto: 'Boa noite, Aiko.', sprite: 'vendedor_serio' },
-      { nome: 'Aiko', texto: 'Olá, Sr. Takashi.', sprite: 'aiko_sorrisoleve' },
-      { nome: 'Aiko', texto: 'Minha mãe me mandou aqui comprar lâmpadas.', sprite: 'aiko_seria' },
-      { nome: 'Vendedor', texto: 'Queimaram outra vez?', sprite: 'vendedor_serio' },
-      { nome: 'Aiko', texto: 'Sim.', sprite: 'aiko_seria' },
-      { nome: 'Vendedor', texto: 'Certo… deixa eu ver… As mesmas de sempre?', sprite: 'vendedor_explicando' },
-      { nome: 'Aiko', texto: 'As de sempre, por favor.', sprite: 'aiko_sorrisoleve' },
-    ],
-  },
-
-  cena7: {
-    background: require('../../assets/lightshop.png'),
-    proxima: null,
-    dialogos: [
-      {
-        nome: '',
-        texto: '*O vendedor se vira e começa a procurar por algo.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Ele já estava quase encontrando, quando é interrompido por um novo cliente…*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Que eu quase nem percebi que entrou.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Era um senhor, aparentemente de uns 50 anos.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: 'Vendedor', texto: 'Posso ajudar, senhor?', sprite: 'vendedor_serio' },
-      {
-        nome: '',
-        texto: '*O homem olha ao redor, como se estivesse procurando alguma coisa.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: 'Homem', texto: 'Eu estava procurando…' },
-      { nome: 'Vendedor', texto: 'Estava procurando…?', sprite: 'vendedor_serio' },
-      {
-        nome: '',
-        texto: '*Ele franze a testa por um instante.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: 'Homem', texto: '… Esquece.' },
-      {
-        nome: '',
-        texto: '*O homem se vira e vai embora.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Como se tivesse esquecido não só o que queria… mas também o motivo de ter entrado ali.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*O vendedor volta a fazer o que estava fazendo.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*O silêncio se instala por alguns segundos.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Decido quebrar.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: 'Aiko', texto: 'Isso… acontece muito por aqui?', sprite: 'aiko_curiosa' },
-      { nome: 'Vendedor', texto: 'O quê?', sprite: 'vendedor_serio' },
-      { nome: 'Aiko', texto: 'Os clientes esquecendo o que vieram fazer…', sprite: 'aiko_curiosa' },
-      { nome: 'Aiko', texto: 'Deve ser essa a graça de trabalhar até essa hora.', sprite: 'aiko_sorrisoleve' },
-      { nome: 'Vendedor', texto: '…', sprite: 'vendedor_serio' },
-      { nome: 'Vendedor', texto: 'Acontece.', sprite: 'vendedor_serio' },
-      {
-        nome: '',
-        texto: '*Por algum motivo… acho que ele não entende de piadas.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      {
-        nome: '',
-        texto: '*Ele estende a mão com as lâmpadas.*',
-        manterSprites: ['vendedor_explicando'],
-      },
-      { nome: 'Vendedor', texto: 'Aqui estão.', sprite: 'vendedor_explicando' },
-      { nome: 'Vendedor', texto: 'Ah… e eu quase ia esquecendo.', sprite: 'vendedor_explicando' },
-      {
-        nome: '',
-        texto: '*Ele pega o baleiro que está no cantinho do balcão e o aproxima de mim.*',
-        manterSprites: ['vendedor_explicando'],
-      },
-      { nome: 'Vendedor', texto: 'Qual você quer?', sprite: 'vendedor_explicando' },
-      { nome: 'Aiko', texto: 'Hm… as rosas.', sprite: 'aiko_curiosa' },
-      {
-        nome: '',
-        texto: '*Digo, pegando a sacola com as lâmpadas.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: 'Vendedor', texto: 'Você sempre escolhe as rosas.', sprite: 'vendedor_serio' },
-      { nome: 'Aiko', texto: 'Bom… eu preciso ir.', sprite: 'aiko_seria' },
-      { nome: 'Aiko', texto: 'Mamãe deve estar preocupada…', sprite: 'aiko_seria' },
-      { nome: 'Aiko', texto: 'Muito obrigada, Sr. Takashi.', sprite: 'aiko_sorrisoleve' },
-      {
-        nome: '',
-        texto: '*Ele acena gentilmente.*',
-        manterSprites: ['vendedor_serio'],
-      },
-      { nome: '', texto: '*Dou meia-volta e caminho até a saída.*' },
-      { nome: '', texto: '*O sino toca novamente quando empurro a porta.*' },
-      { nome: '', texto: '*E o frio da rua me alcança de novo.*' },
-    ],
-  },
-} as const;
-
-type CenaKey = keyof typeof cenas;
 
 export default function Game() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const fadeCena = useRef(new Animated.Value(0)).current;
   const spriteFade = useRef(new Animated.Value(0)).current;
+  const spriteAnterior = useRef<string | null>(null);
+  const flashLimboOpacity = useRef(new Animated.Value(0)).current;
 
   const meioOlhoAnim = useRef(new Animated.Value(0)).current;
   const olhoFechadoAnim = useRef(new Animated.Value(0)).current;
@@ -412,16 +39,101 @@ export default function Game() {
 
   const isMobile = Platform.OS !== 'web';
 
-  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena1');
+  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena69');
   const [dialogoIndex, setDialogoIndex] = useState(0);
   const [textoVisivel, setTextoVisivel] = useState('');
   const [digitando, setDigitando] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
   const [volumeMusica, setVolumeMusica] = useState(60);
+  const [mostrarFlashLimbo, setMostrarFlashLimbo] = useState(false);
+  const [assetsCarregados, setAssetsCarregados] = useState(false);
+
+  const [momentoEscolhaBalinhas, setMomentoEscolhaBalinhas] = useState(false);
+  const [mostrarOpcoesBalinhas, setMostrarOpcoesBalinhas] = useState(false);
+  const [corEscolhida, setCorEscolhida] = useState<CorBala | null>(null);
+
+  const [mostrarFinalAct1, setMostrarFinalAct1] = useState(false);
+  const [mostrarMensagemFinalAct1, setMostrarMensagemFinalAct1] = useState(false);
+  const [frameFinal, setFrameFinal] = useState(0);
+
+  const fadeFinalAct1 = useRef(new Animated.Value(0)).current;
+  const finalAct2Opacity = useRef(new Animated.Value(0)).current;
+
+  const [mostrarTituloAto, setMostrarTituloAto] = useState(false);
+  const [tituloAto, setTituloAto] = useState('');
+  const tituloAtoOpacity = useRef(new Animated.Value(0)).current;
+
+  const mostrarTelaAto = (titulo: string) => {
+    setTituloAto(titulo);
+    setMostrarTituloAto(true);
+
+    tituloAtoOpacity.setValue(0);
+
+    Animated.sequence([
+      Animated.timing(tituloAtoOpacity, {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: true,
+      }),
+      Animated.delay(1200),
+      Animated.timing(tituloAtoOpacity, {
+        toValue: 0,
+        duration: 900,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setMostrarTituloAto(false);
+    });
+  };
+
+
+  const cena9TransicaoOpacity = useRef(new Animated.Value(1)).current;
+  const cena9Zoom = useRef(new Animated.Value(1)).current;
+  const cena9BackgroundAtualRef = useRef<any>(null);
+  const ultimoBackgroundRef = useRef<any>(null);
+  const cena9ZoomAtivoRef = useRef(false);
+  const [cena9BackgroundAtual, setCena9BackgroundAtual] = useState<any>(null);
+  const [cena9BackgroundAnterior, setCena9BackgroundAnterior] = useState<any>(null);
+  const [cena9ZoomAtivo, setCena9ZoomAtivo] = useState(false);
 
   const cena = cenas[cenaAtual];
   const dialogos = cena.dialogos;
-  const dialogoAtual = dialogos[dialogoIndex];
+  const dialogoAtual = dialogos[dialogoIndex] as Dialogo;
+
+  const spriteMobileBottom = -230;
+  const amigaMobileBottom = -230;
+
+  const efeitoSpriteWeb =
+    cenaAtual === 'cena6'
+      ? 'brightness(1) contrast(0.96) saturate(1.08) sepia(0.05)'
+      : cenaAtual === 'cena8'
+        ? 'brightness(0.85) contrast(0.95)'
+        : cenaAtual === 'cena4'
+          ? 'brightness(0.88)'
+          : cenaAtual === 'cena5'
+            ? 'brightness(0.9)'
+            : 'brightness(0.92)';
+
+  const sombraSpriteMobile =
+    cenaAtual === 'cena6'
+      ? 0.04
+      : cenaAtual === 'cena8'
+        ? 0.13
+        : cenaAtual === 'cena4'
+          ? 0.11
+          : cenaAtual === 'cena5'
+            ? 0.1
+            : 0.08;
+
+  const textoDialogoAtual =
+    dialogoAtual.falaCorEscolhida
+      ? dialogoAtual.texto.includes('[COR]')
+        ? dialogoAtual.texto.replace(
+            '[COR]',
+            corEscolhida ? corEscolhida.toLowerCase() : 'rosas',
+          )
+        : `Hmm… as ${corEscolhida ? corEscolhida.toLowerCase() : 'rosas'}.`
+      : dialogoAtual.texto;
 
   const spritesMantidos =
     'manterSprites' in dialogoAtual && dialogoAtual.manterSprites
@@ -437,14 +149,21 @@ export default function Game() {
 
   const spriteAtual = spritePrincipalKey ? sprites[spritePrincipalKey] : null;
 
+  const cenasExcluidasAmigas = [
+    'cena31',
+    'cena60',
+  ];
+
   const mostrarAmigas =
-    cenaAtual === 'cena2' &&
     (
       dialogoAtual.nome === 'Rin' ||
       dialogoAtual.nome === 'Misuki' ||
-      spritesMantidos.some((sprite) => sprite.startsWith('rin_')) ||
-      spritesMantidos.some((sprite) => sprite.startsWith('misuki_'))
-    );
+      (
+        spritesMantidos.some((sprite) => sprite.startsWith('rin_')) &&
+        spritesMantidos.some((sprite) => sprite.startsWith('misuki_'))
+      )
+    ) &&
+    !cenasExcluidasAmigas.includes(cenaAtual);
 
   const rinSpriteKey =
     dialogoAtual.nome === 'Rin' && spritePrincipalKey
@@ -459,11 +178,93 @@ export default function Game() {
   const rinFalando = dialogoAtual.nome === 'Rin';
   const misukiFalando = dialogoAtual.nome === 'Misuki';
 
+  const mostrarTrioGuardachuva =
+    cenaAtual === 'cena60' &&
+    spritesMantidos.some((sprite) => sprite.startsWith('aiko_')) &&
+    spritesMantidos.some((sprite) => sprite.startsWith('rin_')) &&
+    spritesMantidos.some((sprite) => sprite.startsWith('misuki_'));
+
+  const mostrarAikoRin =
+    spritesMantidos.some((sprite) => sprite.startsWith('aiko_')) &&
+    spritesMantidos.some((sprite) => sprite.startsWith('rin_'));
+
+  const aikoTrioGuardachuvaSpriteKey =
+    spritesMantidos.find((sprite) => sprite.startsWith('aiko_')) || 'aiko_seriaguardachuva';
+
+  const rinTrioGuardachuvaSpriteKey =
+    spritesMantidos.find((sprite) => sprite.startsWith('rin_')) || 'rin_seriaguardachuva';
+
+  const misukiTrioGuardachuvaSpriteKey =
+    spritesMantidos.find((sprite) => sprite.startsWith('misuki_')) || 'misuki_rindoguardachuva';
+
+  const aikoDuplaSpriteKey =
+    dialogoAtual.nome === 'Aiko' && spritePrincipalKey
+      ? spritePrincipalKey
+      : spritesMantidos.find((sprite) => sprite.startsWith('aiko_')) || 'aiko_timida';
+
+  const rinDuplaSpriteKey =
+    dialogoAtual.nome === 'Rin' && spritePrincipalKey
+      ? spritePrincipalKey
+      : spritesMantidos.find((sprite) => sprite.startsWith('rin_')) || 'rin_medo';
+
+  const aikoFalando = dialogoAtual.nome === 'Aiko';
+  const rinDuplaFalando = dialogoAtual.nome === 'Rin';
+
+  const mostrarGarotosSupervisora =
+    cenaAtual === 'cena31' &&
+    spritesMantidos.some((sprite) => sprite.startsWith('sota_')) &&
+    spritesMantidos.some((sprite) => sprite.startsWith('tsubasa_')) &&
+    spritesMantidos.some((sprite) => sprite.startsWith('supervisora_'));
+
+  const mostrarGarotos =
+    !mostrarGarotosSupervisora &&
+    (
+      dialogoAtual.nome === 'Tsubasa' ||
+      dialogoAtual.nome === 'Sota' ||
+      spritesMantidos.some((sprite) => sprite.startsWith('tsubasa_')) ||
+      spritesMantidos.some((sprite) => sprite.startsWith('sota_'))
+    );
+
+  const sotaSpriteKey =
+    dialogoAtual.nome === 'Sota' && spritePrincipalKey
+      ? spritePrincipalKey
+      : spritesMantidos.find((sprite) => sprite.startsWith('sota_')) || 'sota_serio';
+
+  const tsubasaSpriteKey =
+    dialogoAtual.nome === 'Tsubasa' && spritePrincipalKey
+      ? spritePrincipalKey
+      : spritesMantidos.find((sprite) => sprite.startsWith('tsubasa_')) || 'tsubasa_serio';
+
+  const supervisoraSpriteKey =
+    spritesMantidos.find((sprite) => sprite.startsWith('supervisora_')) || 'supervisora_irritada';
+
+  const sotaFalando = dialogoAtual.nome === 'Sota';
+  const tsubasaFalando = dialogoAtual.nome === 'Tsubasa';
+  const supervisoraFalando = dialogoAtual.nome === 'Supervisora';
+
+  const spriteKeyAtual = mostrarTrioGuardachuva
+    ? `${aikoTrioGuardachuvaSpriteKey}-${rinTrioGuardachuvaSpriteKey}-${misukiTrioGuardachuvaSpriteKey}`
+    : mostrarAmigas
+      ? `${rinSpriteKey}-${misukiSpriteKey}`
+      : mostrarAikoRin
+        ? `${aikoDuplaSpriteKey}-${rinDuplaSpriteKey}`
+        : mostrarGarotosSupervisora
+        ? `${sotaSpriteKey}-${supervisoraSpriteKey}-${tsubasaSpriteKey}`
+        : mostrarGarotos
+          ? `${sotaSpriteKey}-${tsubasaSpriteKey}`
+          : spritePrincipalKey;
+
   const fonteNome = Platform.select({
     ios: 'Georgia',
     android: 'serif',
     web: 'Georgia',
   });
+
+  const escolhasNarrativas: EscolhaNarrativa[] = Array.isArray(dialogoAtual.escolhas)
+    ? dialogoAtual.escolhas
+    : [];
+
+  const momentoEscolhaNarrativa = escolhasNarrativas.length > 0;
 
   const girarEngrenagem = () => {
     rotateAnim.setValue(0);
@@ -476,9 +277,86 @@ export default function Game() {
   };
 
   useEffect(() => {
+    let componenteAtivo = true;
+
+    const adicionarAsset = (lista: any[], asset: any) => {
+      if (asset && lista.indexOf(asset) === -1) {
+        lista.push(asset);
+      }
+    };
+
+    const carregarImagem = async (asset: any) => {
+      try {
+        const resolvido = Image.resolveAssetSource(asset);
+
+        if (resolvido?.uri) {
+          await Image.prefetch(resolvido.uri);
+        }
+      } catch (error) {
+        // Se algum asset falhar no pré-carregamento, o jogo continua normalmente.
+      }
+    };
+
+    const carregarAssets = async () => {
+      try {
+        const listaAssets: any[] = [];
+
+        Object.keys(sprites).forEach((spriteKey) => {
+          adicionarAsset(listaAssets, (sprites as any)[spriteKey]);
+        });
+
+        Object.keys(cenas).forEach((cenaKey) => {
+          const cenaLista = (cenas as any)[cenaKey];
+
+          adicionarAsset(listaAssets, cenaLista?.background);
+
+          if (Array.isArray(cenaLista?.dialogos)) {
+            cenaLista.dialogos.forEach((dialogo: any) => {
+              adicionarAsset(listaAssets, dialogo?.background);
+            });
+          }
+        });
+
+        [
+          require('../../assets/choices/balinhas1choice.png'),
+          require('../../assets/ui/gear.png'),
+          require('../../assets/backgrounds/ato1/olhos_meio_abertos.png'),
+          require('../../assets/backgrounds/ato1/olhos_fechados.png'),
+          require('../../assets/backgrounds/ato1/finalact1.png'),
+          require('../../assets/backgrounds/ato1/finalact2.png'),
+          require('../../assets/backgrounds/ato2/ato2cena2.png'),
+          require('../../assets/backgrounds/ato2/ato2cena3.png'),
+          require('../../assets/backgrounds/ato2/ato2cena4.png'),
+          require('../../assets/backgrounds/ato2/ato2cena5.png'),
+          require('../../assets/backgrounds/ato3/aikodead.png'),
+          require('../../assets/backgrounds/ato3/aikodead2.png'),
+        ].forEach((asset) => adicionarAsset(listaAssets, asset));
+
+        await Promise.all(listaAssets.map(carregarImagem));
+      } catch (error) {
+        console.log('Erro ao pré-carregar imagens:', error);
+      } finally {
+        if (componenteAtivo) {
+          setAssetsCarregados(true);
+        }
+      }
+    };
+
+    carregarAssets();
+
+    return () => {
+      componenteAtivo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!assetsCarregados) return;
+
+    mostrarTelaAto('ATO I');
+
     Animated.timing(fadeAnim, {
       toValue: 0,
-      duration: 1800,
+      duration: 2600,
       useNativeDriver: true,
     }).start();
 
@@ -513,66 +391,406 @@ export default function Game() {
         }),
       ]),
     ]).start();
-  }, []);
+  }, [assetsCarregados]);
 
   useEffect(() => {
+    if (!assetsCarregados) return;
+
     let index = 0;
+    let textoCompleto = textoDialogoAtual;
 
     setTextoVisivel('');
     setDigitando(true);
 
     const intervalo = setInterval(() => {
-      setTextoVisivel(dialogoAtual.texto.slice(0, index + 1));
+      setTextoVisivel(textoCompleto.slice(0, index + 1));
       index++;
 
-      if (index >= dialogoAtual.texto.length) {
+      if (index >= textoCompleto.length) {
         clearInterval(intervalo);
         setDigitando(false);
       }
     }, 35);
 
     return () => clearInterval(intervalo);
-  }, [dialogoIndex, cenaAtual]);
+  }, [dialogoIndex, cenaAtual, textoDialogoAtual, assetsCarregados]);
 
   useEffect(() => {
-    spriteFade.setValue(0);
+    if (dialogoIndex === 0) {
+      cena9BackgroundAtualRef.current = cena.background;
+      cena9ZoomAtivoRef.current = false;
+      setCena9BackgroundAtual(cena.background);
+      setCena9BackgroundAnterior(null);
+      setCena9ZoomAtivo(false);
+      cena9TransicaoOpacity.setValue(1);
+      cena9Zoom.setValue(1);
+    }
 
-    if (spriteAtual || mostrarAmigas) {
-      Animated.timing(spriteFade, {
-        toValue: 1,
-        duration: 350,
+    let novoBackground: any = null;
+    let ativarZoom = false;
+
+    if (dialogoAtual.background) {
+      novoBackground = dialogoAtual.background;
+    }
+
+    if (cenaAtual === 'cena9' && dialogoAtual.texto === '*Olho para minhas colegas e as vejo conversando escondido da professora.*') {
+      novoBackground = require('../../assets/backgrounds/ato2/ato2cena2.png');
+    }
+
+    if (cenaAtual === 'cena9' && dialogoAtual.texto === '*Rin e Misuki olham para mim instantaneamente.*') {
+      novoBackground = require('../../assets/backgrounds/ato2/ato2cena3.png');
+    }
+
+    if (cenaAtual === 'cena9' && dialogoAtual.texto === '*Meu olhar vai direto pra carteira…*') {
+      novoBackground = require('../../assets/backgrounds/ato2/ato2cena4.png');
+      ativarZoom = true;
+    }
+
+    if (cenaAtual === 'cena9' && dialogoAtual.texto === '*Olho para a janela…*') {
+      novoBackground = require('../../assets/backgrounds/ato2/ato2cena5.png');
+    }
+
+    if (cenaAtual === 'cena9' && dialogoAtual.nome === 'Aiko' && dialogoAtual.texto === 'O que tem ela?') {
+      novoBackground = require('../../assets/backgrounds/ato2/ato2cena3.png');
+    }
+
+    if (!novoBackground) return;
+
+    const backgroundAnterior = cena9BackgroundAtualRef.current || cena.background;
+
+    // Se o background for o mesmo, não faz fade.
+    if (backgroundAnterior === novoBackground) {
+      cena9BackgroundAtualRef.current = novoBackground;
+      setCena9BackgroundAtual(novoBackground);
+      setCena9BackgroundAnterior(null);
+      cena9TransicaoOpacity.setValue(1);
+      cena9ZoomAtivoRef.current = ativarZoom;
+      setCena9ZoomAtivo(ativarZoom);
+      return;
+    }
+
+    setCena9BackgroundAnterior(backgroundAnterior);
+    cena9BackgroundAtualRef.current = novoBackground;
+    setCena9BackgroundAtual(novoBackground);
+
+    cena9ZoomAtivoRef.current = ativarZoom;
+    setCena9ZoomAtivo(ativarZoom);
+
+    cena9TransicaoOpacity.setValue(0);
+    cena9Zoom.setValue(1);
+
+    Animated.timing(cena9TransicaoOpacity, {
+      toValue: 1,
+      duration: 450,
+      useNativeDriver: true,
+    }).start();
+
+    if (ativarZoom) {
+      Animated.timing(cena9Zoom, {
+        toValue: 1.08,
+        duration: 1400,
         useNativeDriver: true,
       }).start();
     }
+  }, [cenaAtual, dialogoIndex]);
+
+  useEffect(() => {
+    if (!spriteKeyAtual) {
+      spriteAnterior.current = null;
+      spriteFade.setValue(0);
+      return;
+    }
+
+    if (spriteAnterior.current !== spriteKeyAtual) {
+      spriteFade.setValue(0);
+
+      Animated.timing(spriteFade, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+
+      spriteAnterior.current = spriteKeyAtual;
+    } else {
+      spriteFade.setValue(1);
+    }
+  }, [spriteKeyAtual]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    if (
+      cenaAtual === 'cena6' &&
+      'escolhaBalinhas' in dialogoAtual &&
+      dialogoAtual.escolhaBalinhas &&
+      !corEscolhida
+    ) {
+      setMomentoEscolhaBalinhas(true);
+      setMostrarOpcoesBalinhas(false);
+
+      timer = setTimeout(() => {
+        setMostrarOpcoesBalinhas(true);
+      }, 2000);
+    } else {
+      setMomentoEscolhaBalinhas(false);
+      setMostrarOpcoesBalinhas(false);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [dialogoIndex, cenaAtual]);
 
-  const trocarCena = () => {
-    const proximaCena = cena.proxima;
+  useEffect(() => {
+    if (!mostrarFinalAct1) return;
 
-    if (proximaCena && cenas[proximaCena as CenaKey]) {
-      Animated.timing(fadeCena, {
+    fadeFinalAct1.setValue(0);
+    finalAct2Opacity.setValue(0);
+    setFrameFinal(0);
+    setMostrarMensagemFinalAct1(false);
+
+    let timerMostrarFinalAct2: ReturnType<typeof setTimeout> | null = null;
+    let timerEsconderFinalAct2: ReturnType<typeof setTimeout> | null = null;
+    let timerMensagem: ReturnType<typeof setTimeout> | null = null;
+
+    // 1) Tela preta por 2 segundos.
+    const timerTelaPreta = setTimeout(() => {
+      // 2) Aparece finalact1.png.
+      Animated.timing(fadeFinalAct1, {
         toValue: 1,
-        duration: 550,
+        duration: 350,
         useNativeDriver: true,
       }).start(() => {
-        setCenaAtual(proximaCena as CenaKey);
-        setDialogoIndex(0);
-        setTextoVisivel('');
+        // 3) finalact2.png aparece POR CIMA de finalact1.
+        timerMostrarFinalAct2 = setTimeout(() => {
+          Animated.timing(finalAct2Opacity, {
+            toValue: 1,
+            duration: 25,
+            useNativeDriver: true,
+          }).start();
+        }, 280);
 
-        Animated.timing(fadeCena, {
-          toValue: 0,
-          duration: 550,
-          useNativeDriver: true,
-        }).start();
+        // 4) finalact2.png some, voltando para finalact1.
+        timerEsconderFinalAct2 = setTimeout(() => {
+          Animated.timing(finalAct2Opacity, {
+            toValue: 0,
+            duration: 25,
+            useNativeDriver: true,
+          }).start();
+        }, 390);
+
+        // 5) Depois da falha, aparece o texto.
+        timerMensagem = setTimeout(() => {
+          setMostrarMensagemFinalAct1(true);
+        }, 1100);
       });
+    }, 2000);
+
+    return () => {
+      clearTimeout(timerTelaPreta);
+
+      if (timerMostrarFinalAct2) clearTimeout(timerMostrarFinalAct2);
+      if (timerEsconderFinalAct2) clearTimeout(timerEsconderFinalAct2);
+      if (timerMensagem) clearTimeout(timerMensagem);
+    };
+  }, [mostrarFinalAct1, finalAct2Opacity, fadeFinalAct1]);
+
+  const trocarCena = () => {
+    let proximaCena = cena.proxima as string | null | undefined;
+
+    // Segurança extra: se algum arquivo antigo ainda apontar para "ato3",
+    // o jogo entra corretamente na primeira cena do ato 3.
+    if (proximaCena === 'ato3') {
+      proximaCena = 'cena49';
     }
+
+    if (!proximaCena) {
+      Animated.timing(fadeCena, {
+        toValue: 1,
+        duration: 1800,
+        useNativeDriver: true,
+      }).start(() => {
+        router.replace('/');
+      });
+
+      return;
+    }
+
+    if (!(proximaCena in cenas)) {
+      console.warn('Cena seguinte não encontrada:', proximaCena);
+      return;
+    }
+
+    const cenaDestino = cenas[proximaCena as CenaKey] as any;
+    const backgroundAtual = (dialogoAtual as any).background || cena.background;
+    const proximoBackground = (cenaDestino.dialogos?.[0] as any)?.background || cenaDestino.background;
+    const deveMostrarTituloAto = proximaCena === 'cena9' || proximaCena === 'cena49';
+    const tituloDoAto = proximaCena === 'cena9' ? 'ATO II' : proximaCena === 'cena49' ? 'ATO III' : '';
+    const deveFazerFade = backgroundAtual !== proximoBackground || deveMostrarTituloAto;
+    const duracaoFade = cenaAtual === 'cena19' && proximaCena === 'cena20' ? 1600 : 350;
+
+    const mudarCena = () => {
+      setCenaAtual(proximaCena as CenaKey);
+      setDialogoIndex(0);
+      setTextoVisivel('');
+      setDigitando(false);
+      spriteAnterior.current = null;
+      cena9BackgroundAtualRef.current = proximoBackground;
+      ultimoBackgroundRef.current = proximoBackground;
+      setCena9BackgroundAtual(proximoBackground);
+      setCena9BackgroundAnterior(null);
+      cena9TransicaoOpacity.setValue(1);
+      cena9Zoom.setValue(1);
+
+      if (deveMostrarTituloAto) {
+        mostrarTelaAto(tituloDoAto);
+      }
+    };
+
+    if (!deveFazerFade) {
+      mudarCena();
+      fadeCena.setValue(0);
+      return;
+    }
+
+    Animated.timing(fadeCena, {
+      toValue: 1,
+      duration: duracaoFade,
+      useNativeDriver: true,
+    }).start(() => {
+      mudarCena();
+
+      Animated.timing(fadeCena, {
+        toValue: 0,
+        duration: duracaoFade,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const escolherBalinha = (cor: CorBala) => {
+    setCorEscolhida(cor);
+    setMomentoEscolhaBalinhas(false);
+    setMostrarOpcoesBalinhas(false);
+    spriteAnterior.current = null;
+    setDialogoIndex((indexAtual) => indexAtual + 1);
+  };
+
+  const escolherOpcaoNarrativa = (proximaCena: string) => {
+    const cenaDestino = proximaCena === 'ato3' ? 'cena49' : proximaCena;
+
+    if (!cenaDestino || !(cenaDestino in cenas)) {
+      console.warn('Cena de escolha não encontrada:', cenaDestino);
+      return;
+    }
+
+    const destino = cenas[cenaDestino as CenaKey] as any;
+    const backgroundAtual = (dialogoAtual as any).background || cena.background;
+    const proximoBackground = (destino.dialogos?.[0] as any)?.background || destino.background;
+    const deveMostrarTituloAto = cenaDestino === 'cena9' || cenaDestino === 'cena49';
+    const tituloDoAto = cenaDestino === 'cena9' ? 'ATO II' : cenaDestino === 'cena49' ? 'ATO III' : '';
+    const deveFazerFade = backgroundAtual !== proximoBackground || deveMostrarTituloAto;
+
+    const mudarCena = () => {
+      setCenaAtual(cenaDestino as CenaKey);
+      setDialogoIndex(0);
+      setTextoVisivel('');
+      setDigitando(false);
+      spriteAnterior.current = null;
+      cena9BackgroundAtualRef.current = proximoBackground;
+      ultimoBackgroundRef.current = proximoBackground;
+      setCena9BackgroundAtual(proximoBackground);
+      setCena9BackgroundAnterior(null);
+      cena9TransicaoOpacity.setValue(1);
+      cena9Zoom.setValue(1);
+
+      if (deveMostrarTituloAto) {
+        mostrarTelaAto(tituloDoAto);
+      }
+    };
+
+    if (!deveFazerFade) {
+      mudarCena();
+      fadeCena.setValue(0);
+      return;
+    }
+
+    Animated.timing(fadeCena, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      mudarCena();
+
+      Animated.timing(fadeCena, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
   };
 
   const handlePress = () => {
     if (configAberta) return;
+    if (momentoEscolhaBalinhas) return;
+    if (mostrarFlashLimbo) return;
+
+    if (
+      cenaAtual === 'final_limbo_escola' &&
+      (
+        textoDialogoAtual === '*Chego na escola, e me sento na minha cadeira, como sempre.*' ||
+        textoDialogoAtual === '*O barulho da aula parece distante… como se não fosse comigo.*'
+      ) &&
+      !digitando
+    ) {
+      setMostrarFlashLimbo(true);
+      flashLimboOpacity.setValue(0);
+
+      Animated.sequence([
+        Animated.timing(flashLimboOpacity, {
+          toValue: 1,
+          duration: 35,
+          useNativeDriver: true,
+        }),
+        Animated.delay(130),
+        Animated.timing(flashLimboOpacity, {
+          toValue: 0,
+          duration: 80,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setMostrarFlashLimbo(false);
+        setDialogoIndex((indexAtual) => indexAtual + 1);
+      });
+
+      return;
+    }
+
+    if (momentoEscolhaNarrativa) {
+      if (digitando) {
+        setTextoVisivel(textoDialogoAtual);
+        setDigitando(false);
+      }
+      return;
+    }
+
+    if (mostrarFinalAct1) {
+      if (mostrarMensagemFinalAct1) {
+        Animated.timing(fadeCena, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }).start(() => {
+          setMostrarFinalAct1(false);
+          setMostrarMensagemFinalAct1(false);
+          trocarCena();
+        });
+      }
+      return;
+    }
 
     if (digitando) {
-      setTextoVisivel(dialogoAtual.texto);
+      setTextoVisivel(textoDialogoAtual);
       setDigitando(false);
       return;
     }
@@ -580,7 +798,11 @@ export default function Game() {
     if (dialogoIndex < dialogos.length - 1) {
       setDialogoIndex(dialogoIndex + 1);
     } else {
-      trocarCena();
+      if (cenaAtual === 'cena8') {
+        setMostrarFinalAct1(true);
+      } else {
+        trocarCena();
+      }
     }
   };
 
@@ -596,29 +818,83 @@ export default function Game() {
     console.log('Jogo salvo:', {
       cenaAtual,
       dialogoIndex,
+      corEscolhida,
     });
   };
+
+  if (!assetsCarregados) {
+    return (
+      <View
+        style={[
+          gameStyles.tela,
+          {
+            backgroundColor: '#000',
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: '#f7f3ff',
+            fontSize: isMobile ? 18 : 22,
+            fontFamily: fonteNome,
+            letterSpacing: 1.5,
+          }}
+        >
+          Carregando...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <TouchableOpacity
       activeOpacity={1}
       onPress={handlePress}
-      style={{ flex: 1, backgroundColor: '#000' }}
+      style={gameStyles.tela}
     >
-      <Image
-        source={cena.background}
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}
-        resizeMode="cover"
-      />
+      {!momentoEscolhaBalinhas ? (
+        <>
+          <Animated.Image
+            source={cena9BackgroundAnterior || cena9BackgroundAtual || cena.background}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              transform: [{ scale: cena9Zoom }],
+            }}
+            resizeMode="cover"
+          />
+
+          <Animated.Image
+            source={cena9BackgroundAtual || cena.background}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              opacity: cena9TransicaoOpacity,
+              transform: [{ scale: cena9Zoom }],
+            }}
+            resizeMode="cover"
+          />
+        </>
+      ) : (
+        <Image
+          source={
+            momentoEscolhaBalinhas
+              ? require('../../assets/choices/balinhas1choice.png')
+              : cena.background
+          }
+          style={gameStyles.background}
+          resizeMode="cover"
+        />
+      )}
 
       {cenaAtual === 'cena1' && (
         <>
           <Animated.Image
-            source={require('../../assets/olhos_meio_abertos.png')}
+            source={require('../../assets/backgrounds/ato1/olhos_meio_abertos.png')}
             style={{
               position: 'absolute',
               width: '100%',
@@ -630,7 +906,7 @@ export default function Game() {
           />
 
           <Animated.Image
-            source={require('../../assets/olhos_fechados.png')}
+            source={require('../../assets/backgrounds/ato1/olhos_fechados.png')}
             style={{
               position: 'absolute',
               width: '100%',
@@ -654,329 +930,432 @@ export default function Game() {
         }}
       />
 
-      {mostrarAmigas ? (
-        <>
-          <Animated.Image
-            source={sprites[rinSpriteKey as SpriteKey]}
-            style={{
-              position: 'absolute',
-              bottom: isMobile ? -190 : -120,
-              left: isMobile ? '24%' : '28%',
-              width: isMobile ? 290 : 500,
-              height: isMobile ? 740 : 830,
-              opacity: spriteFade,
-              zIndex: rinFalando ? 7 : 6,
-              transform: [{ scale: rinFalando ? 1.05 : 0.96 }],
-            }}
-            resizeMode="contain"
-          />
+      {!momentoEscolhaBalinhas && !mostrarFinalAct1 && cenaAtual !== 'cena9' && (
+        mostrarAmigas ? (
+          <>
+            <SpriteRenderer
+              source={sprites[rinSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                left: isMobile ? '24%' : '28%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: rinFalando ? 7 : 6,
+                transform: [{ scale: rinFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
 
-          <Animated.Image
-            source={sprites[misukiSpriteKey as SpriteKey]}
-            style={{
-              position: 'absolute',
-              bottom: isMobile ? -190 : -120,
-              right: isMobile ? '24%' : '28%',
-              width: isMobile ? 290 : 500,
-              height: isMobile ? 740 : 830,
-              opacity: spriteFade,
-              zIndex: misukiFalando ? 7 : 6,
-              transform: [{ scale: misukiFalando ? 1.05 : 0.96 }],
-            }}
-            resizeMode="contain"
-          />
-        </>
-      ) : (
-        spriteAtual && (
-          <Animated.Image
+            <SpriteRenderer
+              source={sprites[misukiSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                right: isMobile ? '24%' : '28%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: misukiFalando ? 7 : 6,
+                transform: [{ scale: misukiFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+          </>
+        ) : mostrarAikoRin ? (
+          <>
+            <SpriteRenderer
+              source={sprites[rinDuplaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                left: isMobile ? '23%' : '27%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: rinDuplaFalando ? 7 : 6,
+                transform: [{ scale: rinDuplaFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+
+            <SpriteRenderer
+              source={sprites[aikoDuplaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                right: isMobile ? '23%' : '27%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: aikoFalando ? 7 : 6,
+                transform: [{ scale: aikoFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+          </>
+        ) : mostrarGarotosSupervisora ? (
+          <>
+            <SpriteRenderer
+              source={sprites[supervisoraSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                left: isMobile ? '34%' : '38%',
+                width: isMobile ? 300 : 520,
+                height: isMobile ? 760 : 860,
+                zIndex: supervisoraFalando ? 6 : 5,
+                transform: [{ scale: supervisoraFalando ? 1.02 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.26,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+
+            <SpriteRenderer
+              source={sprites[sotaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                left: isMobile ? '18%' : '23%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: sotaFalando ? 8 : 7,
+                transform: [{ scale: sotaFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+
+            <SpriteRenderer
+              source={sprites[tsubasaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                right: isMobile ? '19%' : '24%',
+                width: isMobile ? 310 : 530,
+                height: isMobile ? 760 : 860,
+                zIndex: tsubasaFalando ? 8 : 7,
+                transform: [{ scale: tsubasaFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+          </>
+        ) : mostrarGarotos ? (
+          <>
+            <SpriteRenderer
+              source={sprites[sotaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                left: isMobile ? '23%' : '27%',
+                width: isMobile ? 290 : 500,
+                height: isMobile ? 740 : 830,
+                zIndex: sotaFalando ? 7 : 6,
+                transform: [{ scale: sotaFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+
+            <SpriteRenderer
+              source={sprites[tsubasaSpriteKey as SpriteKey]}
+              containerStyle={{
+                position: 'absolute',
+                bottom: isMobile ? amigaMobileBottom : -120,
+                right: isMobile ? '23%' : '27%',
+                width: isMobile ? 310 : 530,
+                height: isMobile ? 760 : 860,
+                zIndex: tsubasaFalando ? 7 : 6,
+                transform: [{ scale: tsubasaFalando ? 1.05 : 0.96 }],
+              }}
+              imageStyle={{
+                shadowColor: '#000',
+                shadowOpacity: 0.28,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 10 },
+              }}
+              spriteFade={spriteFade}
+              efeitoSpriteWeb={efeitoSpriteWeb}
+              sombraSpriteMobile={sombraSpriteMobile}
+            />
+          </>
+        ) : (
+          spriteAtual &&
+          <SpriteRenderer
             source={spriteAtual}
-            style={{
+            containerStyle={{
               position: 'absolute',
-              bottom: isMobile ? -190 : -120,
+              bottom: isMobile ? spriteMobileBottom : -120,
               left: '50%',
               transform: [{ translateX: -((isMobile ? 310 : 560) / 2) }],
               width: isMobile ? 310 : 560,
               height: isMobile ? 760 : 860,
-              opacity: spriteFade,
               zIndex: 6,
             }}
-            resizeMode="contain"
+            imageStyle={{
+              shadowColor: '#000',
+              shadowOpacity: 0.35,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 12 },
+            }}
+            spriteFade={spriteFade}
+            efeitoSpriteWeb={efeitoSpriteWeb}
+            sombraSpriteMobile={sombraSpriteMobile}
           />
         )
       )}
 
-      <TouchableOpacity
-        onPress={() => {
-          girarEngrenagem();
-          setConfigAberta(true);
-        }}
-        activeOpacity={0.8}
-        style={{
-          position: 'absolute',
-          top: isMobile ? 18 : 28,
-          right: isMobile ? 24 : 36,
-          width: isMobile ? 38 : 48,
-          height: isMobile ? 38 : 48,
-          borderRadius: 999,
-          backgroundColor: 'rgba(18, 5, 35, 0.75)',
-          borderWidth: 1,
-          borderColor: 'rgba(190, 130, 255, 0.75)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 20,
-        }}
-      >
-        <Animated.Image
-          source={require('../../assets/gear.png')}
-          style={{
-            width: isMobile ? 32 : 42,
-            height: isMobile ? 32 : 42,
-            transform: [
-              {
-                rotate: rotateAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0deg', '120deg'],
-                }),
-              },
-            ],
+      {!mostrarFinalAct1 && (
+        <TouchableOpacity
+          onPress={() => {
+            girarEngrenagem();
+            setConfigAberta(true);
           }}
-          resizeMode="contain"
-        />
-      </TouchableOpacity>
-
-      <View
-        style={{
-          position: 'absolute',
-          bottom: isMobile ? 20 : 36,
-          width: '100%',
-          alignItems: 'center',
-          paddingHorizontal: isMobile ? 10 : 40,
-          zIndex: 10,
-        }}
-      >
-        <View
+          activeOpacity={0.85}
           style={{
-            width: isMobile ? '88%' : Math.min(width * 0.72, 900),
-            minHeight: isMobile ? 80 : 120,
-            backgroundColor: 'rgba(18, 5, 35, 0.62)',
-            borderRadius: isMobile ? 18 : 24,
-            borderWidth: 1.3,
-            borderColor: 'rgba(190, 130, 255, 0.65)',
-            paddingHorizontal: isMobile ? 18 : 30,
-            paddingTop: isMobile ? 26 : 34,
-            paddingBottom: isMobile ? 14 : 22,
-            shadowColor: '#9b4dff',
-            shadowOpacity: 0.6,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 0 },
-            elevation: 12,
-          }}
-        >
-          {dialogoAtual.nome !== '' && (
-            <View
-              style={{
-                position: 'absolute',
-                top: isMobile ? -17 : -22,
-                left: isMobile ? 22 : 30,
-                minWidth: isMobile ? 108 : 145,
-                height: isMobile ? 34 : 42,
-                backgroundColor: 'rgba(42, 8, 75, 0.95)',
-                borderRadius: 14,
-                borderWidth: 1.2,
-                borderColor: 'rgba(210, 160, 255, 0.85)',
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingHorizontal: 18,
-                shadowColor: '#b45cff',
-                shadowOpacity: 0.7,
-                shadowRadius: 10,
-                elevation: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: '#f7edff',
-                  fontSize: isMobile ? 16 : 20,
-                  fontFamily: fonteNome,
-                  fontWeight: '700',
-                  letterSpacing: 0.5,
-                }}
-              >
-                {dialogoAtual.nome}
-              </Text>
-            </View>
-          )}
-
-          <Text
-            style={{
-              color: '#f8f2ff',
-              fontSize: isMobile ? 16 : 21,
-              lineHeight: isMobile ? 23 : 31,
-              letterSpacing: 0.3,
-            }}
-          >
-            {textoVisivel}
-          </Text>
-
-          {!digitando && (
-            <Text
-              style={{
-                position: 'absolute',
-                right: 18,
-                bottom: 8,
-                color: '#caaaff',
-                fontSize: 14,
-                opacity: 0.8,
-              }}
-            >
-              ▶
-            </Text>
-          )}
-        </View>
-      </View>
-
-      <Modal visible={configAberta} transparent animationType="fade">
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.72)',
+            position: 'absolute',
+            top: isMobile ? 18 : 28,
+            right: isMobile ? 24 : 36,
+            width: isMobile ? 44 : 68,
+            height: isMobile ? 44 : 68,
+            borderRadius: 999,
+            backgroundColor: 'rgba(18, 5, 35, 0.75)',
+            borderWidth: 1,
+            borderColor: 'rgba(190, 130, 255, 0.75)',
             justifyContent: 'center',
             alignItems: 'center',
-            paddingHorizontal: 20,
+            zIndex: 20,
           }}
         >
-          <View
+          <Animated.Image
+            source={require('../../assets/ui/gear.png')}
             style={{
-              width: isMobile ? '78%' : 420,
-              backgroundColor: 'rgba(18, 5, 35, 0.96)',
-              borderRadius: 22,
-              borderWidth: 1,
-              borderColor: 'rgba(190, 130, 255, 0.65)',
-              padding: isMobile ? 18 : 24,
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
+              transform: [
+                {
+                  rotate: rotateAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '120deg'],
+                  }),
+                },
+              ],
             }}
-          >
-            <Text
-              style={{
-                color: '#f7edff',
-                fontSize: isMobile ? 20 : 26,
-                fontWeight: 'bold',
-                textAlign: 'center',
-                marginBottom: 18,
-              }}
-            >
-              Configurações
-            </Text>
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      )}
 
-            <Text
-              style={{
-                color: '#d8c8ff',
-                fontSize: isMobile ? 14 : 16,
-                textAlign: 'center',
-                marginBottom: 8,
-              }}
-            >
-              Volume da música
-            </Text>
+      {momentoEscolhaBalinhas && mostrarOpcoesBalinhas && (
+        <CandyChoices onChoose={escolherBalinha} />
+      )}
 
+      {!momentoEscolhaBalinhas && !mostrarFinalAct1 && momentoEscolhaNarrativa && !digitando && (
+        <NarrativeChoices
+          escolhas={escolhasNarrativas}
+          isMobile={isMobile}
+          onChoose={escolherOpcaoNarrativa}
+        />
+      )}
+
+      {!momentoEscolhaBalinhas && !mostrarFinalAct1 && (
+        <DialogueBox
+          nome={dialogoAtual.nome}
+          texto={textoVisivel}
+          digitando={digitando}
+          isMobile={isMobile}
+          fonteNome={fonteNome}
+        />
+      )}
+
+      {mostrarFinalAct1 && (
+        <>
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000',
+              zIndex: 998,
+            }}
+          />
+
+          <Animated.Image
+            source={require('../../assets/backgrounds/ato1/finalact1.png')}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              zIndex: 999,
+              opacity: fadeFinalAct1,
+            }}
+            resizeMode="contain"
+          />
+
+          <Animated.Image
+            source={require('../../assets/backgrounds/ato1/finalact2.png')}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              zIndex: 1000,
+              opacity: finalAct2Opacity,
+            }}
+            resizeMode="contain"
+          />
+
+          {mostrarMensagemFinalAct1 && (
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
+                position: 'absolute',
+                bottom: 28,
+                width: '100%',
                 alignItems: 'center',
-                marginBottom: 18,
-                gap: 14,
+                paddingHorizontal: 18,
+                zIndex: 1001,
               }}
             >
-              <TouchableOpacity
-                onPress={diminuirVolume}
+              <View
                 style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 999,
-                  backgroundColor: '#d9c7ff',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  width: Math.min(width * 0.88, 900),
+                  minHeight: 92,
+                  backgroundColor: 'rgba(18, 5, 35, 0.62)',
+                  borderRadius: 22,
+                  borderWidth: 1.3,
+                  borderColor: 'rgba(190, 130, 255, 0.65)',
+                  paddingHorizontal: 24,
+                  paddingTop: 28,
+                  paddingBottom: 18,
+                  shadowColor: '#9b4dff',
+                  shadowOpacity: 0.6,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 0 },
+                  elevation: 12,
                 }}
               >
-                <Text style={{ fontSize: 22, fontWeight: 'bold' }}>−</Text>
-              </TouchableOpacity>
+                <Text
+                  style={{
+                    color: '#f8f2ff',
+                    fontSize: 18,
+                    lineHeight: 27,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  Amanhã será um novo dia.
+                </Text>
 
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: isMobile ? 16 : 18,
-                  minWidth: 60,
-                  textAlign: 'center',
-                }}
-              >
-                {volumeMusica}%
-              </Text>
-
-              <TouchableOpacity
-                onPress={aumentarVolume}
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 999,
-                  backgroundColor: '#d9c7ff',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 22, fontWeight: 'bold' }}>+</Text>
-              </TouchableOpacity>
+                <Text
+                  style={{
+                    position: 'absolute',
+                    right: 18,
+                    bottom: 8,
+                    color: '#caaaff',
+                    fontSize: 14,
+                    opacity: 0.8,
+                  }}
+                >
+                  ▶
+                </Text>
+              </View>
             </View>
+          )}
+        </>
+      )}
 
-            <TouchableOpacity
-              onPress={salvarJogo}
-              style={{
-                backgroundColor: '#d9c7ff',
-                paddingVertical: isMobile ? 10 : 13,
-                borderRadius: 12,
-                marginBottom: 10,
-              }}
-            >
-              <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>
-                Salvar jogo
-              </Text>
-            </TouchableOpacity>
+      {mostrarFlashLimbo && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            opacity: flashLimboOpacity,
+            zIndex: 1500,
+          }}
+        >
+          <Image
+            source={
+              textoDialogoAtual === '*O barulho da aula parece distante… como se não fosse comigo.*'
+                ? require('../../assets/backgrounds/ato3/aikodead2.png')
+                : require('../../assets/backgrounds/ato3/aikodead.png')
+            }
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+        </Animated.View>
+      )}
 
-            <TouchableOpacity
-              onPress={() => router.replace('/')}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                paddingVertical: isMobile ? 10 : 13,
-                borderRadius: 12,
-                marginBottom: 10,
-                borderWidth: 1,
-                borderColor: 'rgba(190, 130, 255, 0.35)',
-              }}
-            >
-              <Text
-                style={{
-                  color: '#f1e9ff',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                }}
-              >
-                Voltar ao menu principal
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setConfigAberta(false)}>
-              <Text
-                style={{
-                  color: '#bbb',
-                  textAlign: 'center',
-                  marginTop: 8,
-                }}
-              >
-                Fechar
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <SettingsModal
+        visible={configAberta}
+        isMobile={isMobile}
+        volumeMusica={volumeMusica}
+        onClose={() => setConfigAberta(false)}
+        diminuirVolume={diminuirVolume}
+        aumentarVolume={aumentarVolume}
+        salvarJogo={salvarJogo}
+        voltarMenu={() => router.replace('/')}
+      />
 
       <Animated.View
         pointerEvents="none"
@@ -998,9 +1377,39 @@ export default function Game() {
           height: '100%',
           backgroundColor: '#000',
           opacity: fadeCena,
-          zIndex: 50,
+          zIndex: 2000,
         }}
       />
+
+      {mostrarTituloAto && (
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#000',
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: tituloAtoOpacity,
+            zIndex: 3000,
+            elevation: 3000,
+          }}
+        >
+          <Text
+            style={{
+              color: '#f7f3ff',
+              fontSize: isMobile ? 42 : 64,
+              fontFamily: fonteNome,
+              letterSpacing: 4,
+            }}
+          >
+            {tituloAto}
+          </Text>
+        </Animated.View>
+      )}
     </TouchableOpacity>
   );
 }

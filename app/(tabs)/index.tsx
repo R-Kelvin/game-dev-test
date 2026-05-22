@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ResizeMode, Video } from 'expo-av';
+import { useFonts } from 'expo-font';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect, useRef, useState } from 'react';
@@ -14,10 +14,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 export default function Home() {
-  // ===== AQUI FICAM OS ESTADOS =====
+  const [fontsLoaded] = useFonts({
+    MoreSugar: require('../../assets/fonts/MoreSugar-Regular.ttf'),
+  });
+
   const [cadastroAberto, setCadastroAberto] = useState(false);
   const [loginAberto, setLoginAberto] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
@@ -25,31 +29,40 @@ export default function Home() {
   const [data, setData] = useState(new Date());
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [avisoOfflineAberto, setAvisoOfflineAberto] = useState(false);
+  const [sobreAberto, setSobreAberto] = useState(false);
 
   const isMobile = Platform.OS !== 'web';
+  const { width } = useWindowDimensions();
 
-  // ===== AQUI FICAM AS ANIMAÇÕES =====
+  const BASE_WIDTH = 1920;
+  const mobileScale = width / BASE_WIDTH;
+
+  const s = (value: number) => {
+    return isMobile ? value * mobileScale : value;
+  };
+
   const brilhoAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  const butterfly1Y = useRef(new Animated.Value(0)).current;
-  const butterfly1X = useRef(new Animated.Value(0)).current;
-  const butterfly2Y = useRef(new Animated.Value(0)).current;
-  const butterfly2X = useRef(new Animated.Value(0)).current;
+  const entradaAiko = useRef(new Animated.Value(0)).current;
+  const entradaBotoes = useRef(new Animated.Value(0)).current;
+  const borboletaAnim = useRef(new Animated.Value(0)).current;
+  const lampGlow = useRef(new Animated.Value(0)).current;
 
-  // ===== AQUI FICA O ESTILO DOS INPUTS =====
-  const inputStyle = {
-    backgroundColor: 'rgba(18, 8, 32, 0.95)',
-    color: '#fff',
-    padding: isMobile ? 9 : 14,
-    borderRadius: 12,
-    marginBottom: isMobile ? 8 : 12,
-    fontSize: isMobile ? 12 : 14,
-    borderWidth: 1,
-    borderColor: 'rgba(190, 130, 255, 0.35)',
-  };
+  const aikoIdle = useRef(new Animated.Value(0)).current;
+  const cenaRespira = useRef(new Animated.Value(0)).current;
+  const brilhoLento = useRef(new Animated.Value(0)).current;
+  const botaoPulse = useRef(new Animated.Value(0)).current;
 
-  // ===== AQUI FICAM AS FUNÇÕES =====
+  const particles = useRef(
+    Array.from({ length: 20 }).map((_, index) => ({
+      y: new Animated.Value(900 + index * 35),
+      opacity: new Animated.Value(0),
+      size: 3 + (index % 5),
+      duration: 7000 + index * 260,
+    }))
+  ).current;
+
   const abrirJogo = () => {
     router.replace('/game');
   };
@@ -63,7 +76,6 @@ export default function Home() {
     }).start();
   };
 
-  // ===== AQUI FICAM AS ANIMAÇÕES INICIAIS =====
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
@@ -71,13 +83,46 @@ export default function Home() {
       Animated.sequence([
         Animated.timing(brilhoAnim, {
           toValue: 1,
-          duration: 1800,
+          duration: 2200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(brilhoAnim, {
           toValue: 0,
-          duration: 1800,
+          duration: 2200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.parallel([
+      Animated.timing(entradaAiko, {
+        toValue: 1,
+        duration: 1400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(entradaBotoes, {
+        toValue: 1,
+        duration: 1300,
+        delay: 150,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(aikoIdle, {
+          toValue: 1,
+          duration: 2600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(aikoIdle, {
+          toValue: 0,
+          duration: 2600,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -86,483 +131,574 @@ export default function Home() {
 
     Animated.loop(
       Animated.sequence([
-        Animated.parallel([
-          Animated.timing(butterfly1Y, {
-            toValue: -10,
-            duration: 2200,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(butterfly1X, {
-            toValue: 6,
-            duration: 2200,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(butterfly1Y, {
-            toValue: 0,
-            duration: 2200,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(butterfly1X, {
-            toValue: 0,
-            duration: 2200,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(cenaRespira, {
+          toValue: 1,
+          duration: 4200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(cenaRespira, {
+          toValue: 0,
+          duration: 4200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ])
     ).start();
 
     Animated.loop(
       Animated.sequence([
-        Animated.parallel([
-          Animated.timing(butterfly2Y, {
-            toValue: 8,
-            duration: 2800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(butterfly2X, {
-            toValue: -8,
-            duration: 2800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(butterfly2Y, {
-            toValue: 0,
-            duration: 2800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(butterfly2X, {
-            toValue: 0,
-            duration: 2800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(botaoPulse, {
+          toValue: 1,
+          duration: 1900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(botaoPulse, {
+          toValue: 0,
+          duration: 1900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ])
     ).start();
+
+    Animated.loop(
+      Animated.timing(brilhoLento, {
+        toValue: 1,
+        duration: 9000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(borboletaAnim, {
+          toValue: 1,
+          duration: 1700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(borboletaAnim, {
+          toValue: 0,
+          duration: 1700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(lampGlow, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(lampGlow, {
+          toValue: 0,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    particles.forEach((p, index) => {
+      const animateParticle = () => {
+        p.y.setValue(900 + index * 35);
+        p.opacity.setValue(0);
+
+        Animated.sequence([
+          Animated.delay(index * 260),
+          Animated.parallel([
+            Animated.timing(p.y, {
+              toValue: -120,
+              duration: p.duration,
+              easing: Easing.linear,
+              useNativeDriver: true,
+            }),
+            Animated.sequence([
+              Animated.timing(p.opacity, {
+                toValue: 0.55,
+                duration: 1800,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+              }),
+              Animated.timing(p.opacity, {
+                toValue: 0,
+                duration: p.duration - 1800,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true,
+              }),
+            ]),
+          ]),
+        ]).start(() => animateParticle());
+      };
+
+      animateParticle();
+    });
   }, []);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   const glow = brilhoAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.45, 1],
+    outputRange: [0.86, 1],
   });
+
+  const lampOpacity = lampGlow.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.22, 0.78],
+  });
+
+  const lampScale = lampGlow.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.96, 1.18],
+  });
+
+  const aikoTranslateY = aikoIdle.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, s(-8)],
+  });
+
+  const cenaScale = cenaRespira.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.018],
+  });
+
+  const cenaOpacity = cenaRespira.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.96, 1],
+  });
+
+  const botoesScale = entradaBotoes.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.985, 1],
+  });
+
+  const botoesGlow = botaoPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.25, 0.75],
+  });
+
+  const borboletaTranslateY = borboletaAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [s(-8), s(10)],
+  });
+
+  const brilhoFaixaX = brilhoLento.interpolate({
+    inputRange: [0, 1],
+    outputRange: [s(-500), s(2100)],
+  });
+
+  const inputStyle = {
+    backgroundColor: 'rgba(18, 8, 32, 0.95)',
+    color: '#fff',
+    padding: isMobile ? 9 : 14,
+    borderRadius: 12,
+    marginBottom: isMobile ? 8 : 12,
+    fontSize: isMobile ? 12 : 14,
+    borderWidth: 1,
+    borderColor: 'rgba(190, 130, 255, 0.35)',
+  };
+
+  const botaoBase = {
+    height: s(76),
+    borderRadius: 999,
+    backgroundColor: 'rgba(150, 95, 190, 0.88)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    shadowColor: '#d89cff',
+    shadowOpacity: 0.65,
+    shadowRadius: 20,
+    elevation: 14,
+    overflow: 'hidden' as const,
+    borderWidth: 1,
+    borderColor: 'rgba(238, 205, 255, 0.28)',
+  };
+
+  const textoBotao = {
+    color: '#fff',
+    fontSize: s(38),
+    letterSpacing: 0.5,
+    fontFamily: 'MoreSugar',
+    textShadowColor: 'rgba(255,255,255,0.45)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  };
+
+  const BotaoVivo = ({
+    children,
+    onPress,
+    style,
+  }: {
+    children: any;
+    onPress: () => void;
+    style: any;
+  }) => {
+    return (
+      <Animated.View
+        style={{
+          shadowColor: '#d89cff',
+          shadowOpacity: botoesGlow,
+          shadowRadius: 24,
+          elevation: 18,
+        }}
+      >
+        <TouchableOpacity onPress={onPress} activeOpacity={0.82} style={style}>
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: '32%',
+              height: '180%',
+              backgroundColor: 'rgba(255,255,255,0.16)',
+              transform: [{ translateX: brilhoFaixaX }, { rotate: '-18deg' }],
+            }}
+          />
+
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              borderRadius: 999,
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              opacity: botoesGlow,
+            }}
+          />
+
+          {children}
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#05000b', overflow: 'hidden' }}>
-      {/* ===== AQUI FICA O FUNDO DO MENU ===== */}
-      <Video
-        source={require('../../assets/lastlight.mp4')}
-        style={{ position: 'absolute', width: '100%', height: '100%' }}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted={volumeMusica === 0}
-        volume={volumeMusica / 100}
-      />
-
-      <View
-        style={{
-          pointerEvents: 'none',
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.18)',
-        }}
-      />
-
-      <View
-        style={{
-          pointerEvents: 'none',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: isMobile ? 420 : 620,
-          height: '100%',
-          backgroundColor: 'rgba(8, 0, 18, 0.56)',
-        }}
-      />
-
-      <View
-        style={{
-          pointerEvents: 'none',
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          borderWidth: isMobile ? 22 : 42,
-          borderColor: 'rgba(0,0,0,0.42)',
-        }}
-      />
-
-      {/* ===== AQUI FICAM AS BORBOLETAS ===== */}
       <Animated.Image
-        source={require('../../assets/borboleta.png')}
+        source={require('../../assets/background_menu.png')}
         style={{
           position: 'absolute',
-          left: isMobile ? 36 : 66,
-          top: isMobile ? 38 : 60,
-          width: isMobile ? 80 : 120,
-          height: isMobile ? 80 : 120,
-          opacity: 0.55,
-          transform: [{ translateY: butterfly1Y }, { translateX: butterfly1X }],
-          zIndex: 4,
+          width: '100%',
+          height: '100%',
+          opacity: cenaOpacity,
+          transform: [{ scale: cenaScale }],
+        }}
+        resizeMode="cover"
+      />
+
+
+      {particles.map((p, index) => (
+        <Animated.View
+          key={index}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: s(0),
+            top: s(0),
+            width: s(p.size),
+            height: s(p.size),
+            borderRadius: 999,
+            backgroundColor: 'rgba(214, 157, 255, 0.9)',
+            shadowColor: '#d89cff',
+            shadowOpacity: 0.9,
+            shadowRadius: 12,
+            elevation: 8,
+            opacity: p.opacity,
+            transform: [
+              { translateX: s((index * 135) % 1920) },
+              { translateY: p.y },
+            ],
+            zIndex: 2,
+          }}
+        />
+      ))}
+
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.08)',
+          zIndex: 2,
+        }}
+      />
+
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderWidth: s(38),
+          borderColor: 'rgba(0,0,0,0.18)',
+          zIndex: 3,
+        }}
+      />
+
+      <Animated.Image
+        source={require('../../assets/aiko_menu.png')}
+        style={{
+          position: 'absolute',
+          right: isMobile ? s(700) : s(500),
+          bottom: s(-40),
+          width: s(700),
+          height: s(1020),
+          zIndex: 5,
+          opacity: entradaAiko,
+          transform: [{ translateY: aikoTranslateY }],
         }}
         resizeMode="contain"
       />
 
-      <Animated.Image
-        source={require('../../assets/borboleta.png')}
+      {/* LUZ DA LÂMPADA ESFUMADA */}
+      <Animated.View
+        pointerEvents="none"
         style={{
           position: 'absolute',
-          left: isMobile ? 200 : 300,
-          top: isMobile ? 210 : 310,
-          width: isMobile ? 20 : 28,
-          height: isMobile ? 20 : 28,
-          opacity: 0.45,
-          transform: [{ translateY: butterfly2Y }, { translateX: butterfly2X }],
-          zIndex: 4,
+          right: s(1255),
+          bottom: s(567),
+          opacity: lampOpacity,
+          zIndex: 6,
+          transform: [{ scale: lampScale }],
         }}
-        resizeMode="contain"
-      />
+      >
+        <View
+          style={{
+            position: 'absolute',
+            width: s(300),
+            height: s(300),
+            borderRadius: 999,
+            backgroundColor: 'rgba(218, 157, 255, 0.035)',
+            right: s(-112),
+            bottom: s(-112),
+          }}
+        />
 
-      {/* ===== AQUI FICA O BOTÃO DE CONFIGURAÇÕES ===== */}
-      <View
+        <View
+          style={{
+            position: 'absolute',
+            width: s(220),
+            height: s(220),
+            borderRadius: 999,
+            backgroundColor: 'rgba(218, 157, 255, 0.055)',
+            right: s(-72),
+            bottom: s(-72),
+          }}
+        />
+
+        <View
+          style={{
+            position: 'absolute',
+            width: s(170),
+            height: s(170),
+            borderRadius: 999,
+            backgroundColor: 'rgba(218, 157, 255, 0.075)',
+            right: s(-45),
+            bottom: s(-45),
+          }}
+        />
+
+        <View
+          style={{
+            position: 'absolute',
+            width: s(120),
+            height: s(120),
+            borderRadius: 999,
+            backgroundColor: 'rgba(218, 157, 255, 0.11)',
+            right: s(-20),
+            bottom: s(-20),
+          }}
+        />
+
+        <View
+          style={{
+            width: s(70),
+            height: s(70),
+            borderRadius: 999,
+            backgroundColor: 'rgba(245, 220, 255, 0.17)',
+            shadowColor: '#e4b1ff',
+            shadowOpacity: 1,
+            shadowRadius: 70,
+            elevation: 30,
+          }}
+        />
+      </Animated.View>
+
+      <TouchableOpacity
+        onPress={() => {
+          girarEngrenagem();
+          setConfigAberta(true);
+        }}
+        activeOpacity={0.85}
         style={{
           position: 'absolute',
-          top: isMobile ? 14 : 28,
-          right: isMobile ? 20 : 36,
+          top: s(34),
+          right: s(42),
+          width: isMobile ? s(90) : s(68),
+          height: isMobile ? s(90) : s(68),
+          borderRadius: 999,
+          backgroundColor: 'rgba(122, 70, 151, 0.95)',
+          justifyContent: 'center',
           alignItems: 'center',
           zIndex: 20,
+          shadowColor: '#d89cff',
+          shadowOpacity: 0.6,
+          shadowRadius: 18,
+          elevation: 14,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.25)',
         }}
       >
-        <TouchableOpacity
-          onPress={() => {
-            girarEngrenagem();
-            setConfigAberta(true);
-          }}
-          activeOpacity={0.8}
+        <Animated.Image
+          source={require('../../assets/ui/gear.png')}
           style={{
-            width: isMobile ? 42 : 54,
-            height: isMobile ? 42 : 54,
-            borderRadius: 999,
-            backgroundColor: 'rgba(20, 8, 38, 0.8)',
-            borderWidth: 2,
-            borderColor: '#d8b8ff',
-            justifyContent: 'center',
-            alignItems: 'center',
-            shadowColor: '#b45cff',
-            shadowOpacity: 0.9,
-            shadowRadius: 15,
-            elevation: 12,
-          }}
-        >
-          <Animated.Image
-            source={require('../../assets/gear.png')}
-            style={{
-              width: isMobile ? 31 : 42,
-              height: isMobile ? 31 : 42,
-              transform: [
-                {
-                  rotate: rotateAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0deg', '120deg'],
-                  }),
-                },
-              ],
-            }}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        <Text
-          style={{
-            color: 'rgba(220, 190, 255, 0.7)',
-            fontSize: isMobile ? 7 : 9,
-            letterSpacing: 1.2,
-            marginTop: 4,
-            fontWeight: '600',
-          }}
-        >
-          CONFIGURAÇÕES
-        </Text>
-      </View>
-
-      {/* ===== AQUI FICA O PAINEL PRINCIPAL ===== */}
-      <View
-        style={{
-          position: 'absolute',
-          left: isMobile ? 42 : 78,
-          top: isMobile ? 4 : 22,
-          width: isMobile ? 340 : 520,
-          alignItems: 'center',
-          zIndex: 5,
-        }}
-      >
-        <Image
-          source={require('../../assets/logo.png')}
-          style={{
-            width: isMobile ? 250 : 390,
-            height: isMobile ? 145 : 230,
-            marginBottom: isMobile ? -6 : -12,
+            width: isMobile ? s(60) : s(40),
+            height: isMobile ? s(60) : s(40),
+            transform: [
+              {
+                rotate: rotateAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '120deg'],
+                }),
+              },
+            ],
           }}
           resizeMode="contain"
         />
-
-        {/* ===== AQUI FICA A SINOPSE ===== */}
-        <View
-          style={{
-            width: '100%',
-            backgroundColor: 'rgba(7, 2, 15, 0.76)',
-            borderWidth: 1.5,
-            borderColor: 'rgba(183, 95, 255, 0.75)',
-            borderRadius: 18,
-            paddingVertical: isMobile ? 14 : 22,
-            paddingHorizontal: isMobile ? 18 : 30,
-            shadowColor: '#a653ff',
-            shadowOpacity: 0.9,
-            shadowRadius: 18,
-            elevation: 15,
-          }}
-        >
-          <Text
-            style={{
-              position: 'absolute',
-              left: 13,
-              top: 8,
-              color: '#8f4cff',
-              fontSize: isMobile ? 18 : 25,
-              opacity: 0.65,
-            }}
-          >
-            ✧
-          </Text>
-
-          <Text
-            style={{
-              position: 'absolute',
-              right: 13,
-              top: 8,
-              color: '#8f4cff',
-              fontSize: isMobile ? 18 : 25,
-              opacity: 0.65,
-            }}
-          >
-            ✧
-          </Text>
-
-          <Text
-            style={{
-              color: '#f2eaff',
-              fontSize: isMobile ? 12 : 18,
-              lineHeight: isMobile ? 18 : 27,
-              textAlign: 'center',
-            }}
-          >
-            Aiko Yukimura segue todas as noites o mesmo caminho após a escola,
-            levando lâmpadas para sua mãe.
-          </Text>
-
-          <View
-            style={{
-              height: 1,
-              width: '80%',
-              alignSelf: 'center',
-              backgroundColor: 'rgba(205, 150, 255, 0.35)',
-              marginVertical: isMobile ? 10 : 17,
-            }}
-          />
-
-          <Text
-            style={{
-              color: '#d7b9ff',
-              fontSize: isMobile ? 12 : 18,
-              lineHeight: isMobile ? 18 : 27,
-              textAlign: 'center',
-            }}
-          >
-            Tudo parece igual... até que pequenas coisas começam a não fazer mais sentido.
-          </Text>
-        </View>
-
-        {/* ===== AQUI FICAM OS BOTÕES ===== */}
-        <Animated.View
-          style={{
-            opacity: glow,
-            width: isMobile ? 285 : 430,
-            marginTop: isMobile ? 14 : 22,
-            shadowColor: '#d788ff',
-            shadowOpacity: 1,
-            shadowRadius: 20,
-            elevation: 15,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => setLoginAberto(true)}
-            activeOpacity={0.85}
-            style={{
-              height: isMobile ? 56 : 76,
-              borderRadius: 13,
-              backgroundColor: 'rgba(189, 94, 255, 0.95)',
-              borderWidth: 1.5,
-              borderColor: '#f1d9ff',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            }}
-          >
-            <Text style={{ fontSize: isMobile ? 24 : 35, marginRight: 18 }}>
-              🔮
-            </Text>
-
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: isMobile ? 22 : 34,
-                fontWeight: 'bold',
-                letterSpacing: 3,
-              }}
-            >
-              ENTRAR
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <TouchableOpacity
-          onPress={() => setCadastroAberto(true)}
-          activeOpacity={0.85}
-          style={{
-            width: isMobile ? 285 : 430,
-            height: isMobile ? 52 : 72,
-            borderRadius: 13,
-            backgroundColor: 'rgba(18, 5, 35, 0.86)',
-            borderWidth: 1.5,
-            borderColor: '#b875ff',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginTop: isMobile ? 10 : 16,
-          }}
-        >
-          <Text style={{ fontSize: isMobile ? 21 : 31, marginRight: 16 }}>
-            👤
-          </Text>
-
-          <Text
-            style={{
-              color: '#e8d4ff',
-              fontSize: isMobile ? 20 : 30,
-              fontWeight: 'bold',
-              letterSpacing: 2.4,
-            }}
-          >
-            CRIAR CONTA
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => setLoginAberto(true)}>
-          <Text
-            style={{
-              color: '#d6b6ff',
-              fontSize: isMobile ? 10 : 14,
-              marginTop: isMobile ? 6 : 10,
-              textDecorationLine: 'underline',
-            }}
-          >
-            Esqueci minha senha 〉
-          </Text>
-        </TouchableOpacity>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            width: isMobile ? 285 : 430,
-            marginTop: isMobile ? 10 : 14,
-            marginBottom: isMobile ? 2 : 4,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              height: 1,
-              backgroundColor: 'rgba(190, 130, 255, 0.35)',
-            }}
-          />
-
-          <Text
-            style={{
-              color: 'rgba(190, 150, 255, 0.7)',
-              fontSize: isMobile ? 10 : 12,
-              marginHorizontal: isMobile ? 10 : 14,
-              letterSpacing: 2,
-              fontWeight: '600',
-            }}
-          >
-            OU
-          </Text>
-
-          <View
-            style={{
-              flex: 1,
-              height: 1,
-              backgroundColor: 'rgba(190, 130, 255, 0.35)',
-            }}
-          />
-        </View>
-
-        <TouchableOpacity
-          onPress={() => setAvisoOfflineAberto(true)}
-          activeOpacity={0.8}
-          style={{
-            width: isMobile ? 285 : 430,
-            height: isMobile ? 44 : 58,
-            borderRadius: 13,
-            backgroundColor: 'rgba(30, 10, 55, 0.6)',
-            borderWidth: 1,
-            borderColor: 'rgba(190, 130, 255, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginTop: isMobile ? 4 : 6,
-          }}
-        >
-          <Text style={{ fontSize: isMobile ? 16 : 22, marginRight: 10 }}>
-            👁️
-          </Text>
-
-          <Text
-            style={{
-              color: 'rgba(220, 190, 255, 0.85)',
-              fontSize: isMobile ? 14 : 20,
-              fontWeight: '600',
-              letterSpacing: 1.6,
-            }}
-          >
-            CONTINUAR SEM CONTA
-          </Text>
-        </TouchableOpacity>
-
+      </TouchableOpacity>
+<TouchableOpacity
+        onPress={() => setSobreAberto(true)}
+        activeOpacity={0.85}
+        style={{
+          position: 'absolute',
+          top: s(34),
+          right: s(160),
+          width: isMobile ? s(90) : s(68),
+          height: isMobile ? s(90) : s(68),
+          borderRadius: 999,
+          backgroundColor: 'rgba(122, 70, 151, 0.95)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 20,
+          shadowColor: '#d89cff',
+          shadowOpacity: 0.6,
+          shadowRadius: 18,
+          elevation: 14,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.25)',
+        }}
+      >
         <Text
           style={{
-            color: 'rgba(180, 140, 255, 0.5)',
-            fontSize: isMobile ? 9 : 11,
-            marginTop: isMobile ? 4 : 6,
-            letterSpacing: 0.5,
+            color: '#fff',
+            fontSize: isMobile ? s(46) : s(34),
+            fontWeight: 'bold',
+            textShadowColor: 'rgba(255,255,255,0.45)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 8,
           }}
         >
-          Jogar offline (alguns recursos limitados)
+          ?
         </Text>
+      </TouchableOpacity>
+<View
+        style={{
+          position: 'absolute',
+          left: s(82),
+          top: s(42),
+          zIndex: 10,
+          alignItems: 'center',
+        }}
+      >
+        <View>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={{
+              width: isMobile ? s(580) : s(460),
+              height: isMobile ? s(350) : s(280),
+              marginBottom: isMobile ? s(40) : s(70),
+            }}
+            resizeMode="contain"
+          />
+
+          <Animated.Image
+            source={require('../../assets/ui/borboleta.png')}
+            style={{
+              position: 'absolute',
+              right: isMobile ? s(430) : s(450),
+              top: isMobile ? s(80) : s(65),
+              width: isMobile ? s(180) : s(75),
+              height: isMobile ? s(95) : s(75),
+              opacity: glow,
+              transform: [{ translateY: borboletaTranslateY }],
+              zIndex: 15,
+            }}
+            resizeMode="contain"
+          />
+        </View>
+
+        <Animated.View
+          style={{
+            opacity: entradaBotoes,
+            alignItems: 'flex-start',
+            transform: [{ scale: botoesScale }],
+          }}
+        >
+          <BotaoVivo
+            onPress={() => setLoginAberto(true)}
+            style={{
+              ...botaoBase,
+              width: isMobile ? s(440) : s(380),
+              marginLeft: s(42),
+              marginBottom: s(42),
+            }}
+          >
+            <Text style={textoBotao}>Entrar</Text>
+          </BotaoVivo>
+
+          <BotaoVivo
+            onPress={() => setCadastroAberto(true)}
+            style={{
+              ...botaoBase,
+              width: isMobile ? s(420) : s(360),
+              marginLeft: s(-30),
+              marginBottom: s(44),
+            }}
+          >
+            <Text style={textoBotao}>Criar conta</Text>
+          </BotaoVivo>
+
+          <BotaoVivo
+            onPress={() => setAvisoOfflineAberto(true)}
+            style={{
+              ...botaoBase,
+              width: isMobile ? s(500) : s(450),
+              marginLeft: s(36),
+              marginTop: s(1),
+            }}
+          >
+            <Text
+              style={{
+                ...textoBotao,
+                fontSize: s(34),
+              }}
+            >
+              Entrar sem conta
+            </Text>
+          </BotaoVivo>
+        </Animated.View>
       </View>
 
-      {/* ===== MODAL AVISO OFFLINE ===== */}
+      {/* MODAL AVISO OFFLINE */}
       <Modal visible={avisoOfflineAberto} transparent animationType="fade">
         <View
           style={{
@@ -582,45 +718,19 @@ export default function Home() {
               borderColor: 'rgba(205, 150, 255, 0.75)',
               paddingVertical: isMobile ? 20 : 28,
               paddingHorizontal: isMobile ? 20 : 28,
-              shadowColor: '#b875ff',
-              shadowOpacity: 1,
-              shadowRadius: 22,
-              elevation: 18,
             }}
           >
-            <Text
-              style={{
-                color: '#f7edff',
-                fontSize: isMobile ? 26 : 34,
-                textAlign: 'center',
-                marginBottom: 6,
-              }}
-            >
-              ⚠️
-            </Text>
-
             <Text
               style={{
                 color: '#f7edff',
                 fontSize: isMobile ? 20 : 27,
                 fontWeight: 'bold',
                 textAlign: 'center',
-                letterSpacing: 1.2,
                 marginBottom: 12,
               }}
             >
               Progresso não salvo
             </Text>
-
-            <View
-              style={{
-                height: 1,
-                width: '75%',
-                alignSelf: 'center',
-                backgroundColor: 'rgba(205, 150, 255, 0.35)',
-                marginBottom: 16,
-              }}
-            />
 
             <Text
               style={{
@@ -642,25 +752,17 @@ export default function Home() {
               }}
               activeOpacity={0.85}
               style={{
-                backgroundColor: 'rgba(189, 94, 255, 0.95)',
-                borderWidth: 1.5,
-                borderColor: '#f1d9ff',
+                backgroundColor: 'rgba(150, 95, 190, 0.95)',
                 paddingVertical: isMobile ? 11 : 14,
                 borderRadius: 14,
-                shadowColor: '#d788ff',
-                shadowOpacity: 1,
-                shadowRadius: 14,
-                elevation: 12,
                 marginBottom: 10,
               }}
             >
               <Text
                 style={{
                   color: '#fff',
-                  fontSize: isMobile ? 14 : 17,
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  letterSpacing: 1.5,
                 }}
               >
                 CONTINUAR MESMO ASSIM
@@ -672,8 +774,6 @@ export default function Home() {
               activeOpacity={0.85}
               style={{
                 backgroundColor: 'rgba(255,255,255,0.07)',
-                borderWidth: 1,
-                borderColor: 'rgba(190, 130, 255, 0.35)',
                 paddingVertical: isMobile ? 10 : 13,
                 borderRadius: 14,
               }}
@@ -681,10 +781,8 @@ export default function Home() {
               <Text
                 style={{
                   color: '#d8c8ff',
-                  fontSize: isMobile ? 13 : 15,
                   fontWeight: '600',
                   textAlign: 'center',
-                  letterSpacing: 1,
                 }}
               >
                 VOLTAR E FAZER LOGIN
@@ -694,7 +792,92 @@ export default function Home() {
         </View>
       </Modal>
 
-      {/* ===== MODAL CONFIGURAÇÕES ===== */}
+      {/* MODAL SOBRE */}
+      <Modal visible={sobreAberto} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.78)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+          }}
+        >
+          <View
+            style={{
+              width: isMobile ? '82%' : 520,
+              backgroundColor: 'rgba(18, 5, 35, 0.97)',
+              borderRadius: 24,
+              borderWidth: 1.5,
+              borderColor: 'rgba(205, 150, 255, 0.75)',
+              paddingVertical: isMobile ? 20 : 28,
+              paddingHorizontal: isMobile ? 20 : 30,
+              shadowColor: '#d89cff',
+              shadowOpacity: 0.55,
+              shadowRadius: 24,
+              elevation: 18,
+            }}
+          >
+            <Text
+              style={{
+                color: '#f7edff',
+                fontSize: isMobile ? 21 : 28,
+                fontWeight: 'bold',
+                textAlign: 'center',
+                marginBottom: 14,
+              }}
+            >
+              Sobre o jogo
+            </Text>
+
+            <Text
+              style={{
+                color: '#d9c3ff',
+                fontSize: isMobile ? 13 : 16,
+                lineHeight: isMobile ? 20 : 25,
+                textAlign: 'center',
+                marginBottom: 18,
+              }}
+            >
+              Você já teve a sensação de que algo está fora do lugar…
+Mesmo quando tudo parece exatamente como deveria?
+{'\n'}Aiko Yukimura tem uma rotina normal, como todas as outras.
+Vai à escola, segue o mesmo caminho,
+volta para casa no fim do dia.
+{'\n'}Tudo acontece como sempre aconteceu.
+E talvez seja justamente isso…
+que torna tudo tão estranho.
+Como se algo estivesse errado —
+mesmo sem nunca ter mudado.
+
+{'\n'}Last Light Way é uma visual novel de mistério e suspense,
+criada como projeto desenvolvido para a disciplina de Mobile.
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => setSobreAberto(false)}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: 'rgba(150, 95, 190, 0.95)',
+                paddingVertical: isMobile ? 11 : 14,
+                borderRadius: 14,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}
+              >
+                VOLTAR
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL CONFIGURAÇÕES */}
       <Modal visible={configAberta} transparent animationType="fade">
         <View
           style={{
@@ -710,8 +893,6 @@ export default function Home() {
               width: isMobile ? '78%' : 420,
               backgroundColor: 'rgba(18, 5, 35, 0.96)',
               borderRadius: 22,
-              borderWidth: 1,
-              borderColor: 'rgba(190, 130, 255, 0.65)',
               padding: isMobile ? 18 : 24,
             }}
           >
@@ -793,8 +974,6 @@ export default function Home() {
                 backgroundColor: 'rgba(255,255,255,0.08)',
                 paddingVertical: isMobile ? 10 : 13,
                 borderRadius: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(190, 130, 255, 0.35)',
               }}
             >
               <Text
@@ -811,7 +990,7 @@ export default function Home() {
         </View>
       </Modal>
 
-      {/* ===== MODAL LOGIN ===== */}
+      {/* MODAL LOGIN */}
       <Modal visible={loginAberto} transparent animationType="fade">
         <View
           style={{
@@ -829,8 +1008,6 @@ export default function Home() {
               backgroundColor: 'rgba(18, 8, 32, 0.97)',
               borderRadius: 22,
               padding: isMobile ? 16 : 24,
-              borderWidth: 1,
-              borderColor: 'rgba(190, 130, 255, 0.62)',
             }}
           >
             <Text
@@ -840,17 +1017,12 @@ export default function Home() {
                 fontWeight: 'bold',
                 marginBottom: isMobile ? 12 : 18,
                 textAlign: 'center',
-                letterSpacing: 1,
               }}
             >
               ENTRAR
             </Text>
 
-            <TextInput
-              placeholder="E-mail"
-              placeholderTextColor="#aaa"
-              style={inputStyle}
-            />
+            <TextInput placeholder="E-mail" placeholderTextColor="#aaa" style={inputStyle} />
 
             <TextInput
               placeholder="Senha"
@@ -862,15 +1034,13 @@ export default function Home() {
             <TouchableOpacity
               onPress={abrirJogo}
               style={{
-                backgroundColor: '#b875ff',
+                backgroundColor: '#965fbe',
                 padding: isMobile ? 10 : 14,
                 borderRadius: 12,
                 marginTop: 4,
               }}
             >
-              <Text
-                style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}
-              >
+              <Text style={{ textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>
                 ENTRAR NO JOGO
               </Text>
             </TouchableOpacity>
@@ -884,7 +1054,7 @@ export default function Home() {
         </View>
       </Modal>
 
-      {/* ===== MODAL CADASTRO ===== */}
+      {/* MODAL CADASTRO */}
       <Modal visible={cadastroAberto} transparent animationType="fade">
         <View
           style={{
@@ -896,7 +1066,10 @@ export default function Home() {
           }}
         >
           <ScrollView
-            contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
+            contentContainerStyle={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             <View
               style={{
@@ -905,8 +1078,6 @@ export default function Home() {
                 backgroundColor: 'rgba(18, 8, 32, 0.97)',
                 borderRadius: 22,
                 padding: isMobile ? 14 : 24,
-                borderWidth: 1,
-                borderColor: 'rgba(190, 130, 255, 0.62)',
               }}
             >
               <Text
@@ -916,7 +1087,6 @@ export default function Home() {
                   fontWeight: 'bold',
                   marginBottom: isMobile ? 10 : 18,
                   textAlign: 'center',
-                  letterSpacing: 1,
                 }}
               >
                 CRIAR CONTA
@@ -925,8 +1095,20 @@ export default function Home() {
               <TextInput placeholder="Nome" placeholderTextColor="#aaa" style={inputStyle} />
               <TextInput placeholder="Sobrenome" placeholderTextColor="#aaa" style={inputStyle} />
               <TextInput placeholder="E-mail" placeholderTextColor="#aaa" style={inputStyle} />
-              <TextInput placeholder="Senha" placeholderTextColor="#aaa" secureTextEntry style={inputStyle} />
-              <TextInput placeholder="Confirmar senha" placeholderTextColor="#aaa" secureTextEntry style={inputStyle} />
+
+              <TextInput
+                placeholder="Senha"
+                placeholderTextColor="#aaa"
+                secureTextEntry
+                style={inputStyle}
+              />
+
+              <TextInput
+                placeholder="Confirmar senha"
+                placeholderTextColor="#aaa"
+                secureTextEntry
+                style={inputStyle}
+              />
 
               <TouchableOpacity onPress={() => setMostrarPicker(true)} style={inputStyle}>
                 <Text style={{ color: '#aaa' }}>{data.toLocaleDateString()}</Text>
@@ -947,7 +1129,7 @@ export default function Home() {
               <TouchableOpacity
                 onPress={abrirJogo}
                 style={{
-                  backgroundColor: '#b875ff',
+                  backgroundColor: '#965fbe',
                   padding: isMobile ? 10 : 14,
                   borderRadius: 12,
                   marginTop: 4,
