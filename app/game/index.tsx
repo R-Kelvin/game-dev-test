@@ -21,12 +21,14 @@ import type { CenaKey, CorBala } from './data/cenas';
 import { cenas } from './data/cenas';
 import type { Dialogo, EscolhaNarrativa } from './data/types';
 import { gameStyles } from './styles/gameStyles';
+import { useAuth } from '@/contexts/auth';
 
 
 const { width } = Dimensions.get('window');
 
 
 export default function Game() {
+  const { logout } = useAuth();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const fadeCena = useRef(new Animated.Value(0)).current;
   const spriteFade = useRef(new Animated.Value(0)).current;
@@ -822,6 +824,11 @@ export default function Game() {
     });
   };
 
+  const voltarMenu = async () => {
+    await logout();
+    router.replace('/');
+  };
+
   if (!assetsCarregados) {
     return (
       <View
@@ -1354,7 +1361,7 @@ export default function Game() {
         diminuirVolume={diminuirVolume}
         aumentarVolume={aumentarVolume}
         salvarJogo={salvarJogo}
-        voltarMenu={() => router.replace('/')}
+        voltarMenu={voltarMenu}
       />
 
       <Animated.View
