@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SpriteKey } from './data/sprites';
 import { sprites } from './data/sprites';
 
+import { useAuth } from '@/contexts/auth';
 import {
   Animated,
   Dimensions,
@@ -21,7 +22,6 @@ import type { CenaKey, CorBala } from './data/cenas';
 import { cenas } from './data/cenas';
 import type { Dialogo, EscolhaNarrativa } from './data/types';
 import { gameStyles } from './styles/gameStyles';
-import { useAuth } from '@/contexts/auth';
 
 
 const { width } = Dimensions.get('window');
@@ -41,7 +41,7 @@ export default function Game() {
 
   const isMobile = Platform.OS !== 'web';
 
-  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena69');
+  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena1');
   const [dialogoIndex, setDialogoIndex] = useState(0);
   const [textoVisivel, setTextoVisivel] = useState('');
   const [digitando, setDigitando] = useState(false);

@@ -1,13 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-type User = {
+import type { Profile, SupabaseSession } from '@/services/supabase';
+import { supabaseService } from '@/services/supabase';
+
+type AuthUser = {
   id: string;
-  firstName: string;
-  lastName: string;
   email: string;
-  password: string;
-  birthDate: string;
+  profile: Profile | null;
 };
 
 type RegisterData = {
@@ -25,30 +24,18 @@ type LoginData = {
 };
 
 type AuthContextValue = {
-  user: User | null;
+  user: AuthUser | null;
+  session: SupabaseSession | null;
   isLoading: boolean;
   register: (data: RegisterData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   logout: () => Promise<void>;
 };
 
-const USERS_KEY = '@last_light_way:users';
-const AUTH_USER_KEY = '@last_light_way:auth_user';
-
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
-
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const readUsers = async (): Promise<User[]> => {
-  const storedUsers = await AsyncStorage.getItem(USERS_KEY);
-  return storedUsers ? JSON.parse(storedUsers) : [];
-};
-
-const saveUsers = async (users: User[]) => {
-  await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
-};
 
 const validateRequired = (value: string, message: string) => {
   if (!value.trim()) {
@@ -56,19 +43,55 @@ const validateRequired = (value: string, message: string) => {
   }
 };
 
+const validateEmail = (email: string) => {
+  if (!emailRegex.test(email)) {
+    throw new Error('Informe um e-mail válido.');
+  }
+};
+
+const validateBirthDate = (birthDate: Date | null) => {
+  if (!birthDate) {
+    throw new Error('Informe sua data de nascimento.');
+  }
+
+  if (birthDate > new Date()) {
+    throw new Error('A data de nascimento não pode estar no futuro.');
+  }
+};
+
+const getAuthUser = (session: SupabaseSession, profile: Profile | null): AuthUser => ({
+  id: session.user.id,
+  email: session.user.email ?? profile?.email ?? '',
+  profile,
+});
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<SupabaseSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadSession = async () => {
+    const restoreSession = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem(AUTH_USER_KEY);
-        if (isMounted && storedUser) {
-          setUser(JSON.parse(storedUser));
+        const restoredSession = await supabaseService.restoreSession();
+
+        if (!isMounted || !restoredSession) {
+          return;
         }
+
+        const profile = await supabaseService.getProfile(
+          restoredSession.user.id,
+          restoredSession.access_token,
+        );
+
+        if (isMounted) {
+          setSession(restoredSession);
+          setUser(getAuthUser(restoredSession, profile));
+        }
+      } catch (error) {
+        await supabaseService.signOut();
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -76,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    loadSession();
+    restoreSession();
 
     return () => {
       isMounted = false;
@@ -91,10 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     validateRequired(data.confirmPassword, 'Confirme sua senha.');
 
     const email = normalizeEmail(data.email);
-
-    if (!emailRegex.test(email)) {
-      throw new Error('Informe um e-mail válido.');
-    }
+    validateEmail(email);
 
     if (data.password.length < 6) {
       throw new Error('A senha deve ter pelo menos 6 caracteres.');
@@ -104,34 +124,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('A senha e a confirmação precisam ser iguais.');
     }
 
-    if (!data.birthDate) {
+    validateBirthDate(data.birthDate);
+    const birthDate = data.birthDate;
+
+    if (!birthDate) {
       throw new Error('Informe sua data de nascimento.');
     }
 
-    if (data.birthDate > new Date()) {
-      throw new Error('A data de nascimento não pode estar no futuro.');
-    }
-
-    const users = await readUsers();
-    const emailAlreadyExists = users.some((storedUser) => storedUser.email === email);
-
-    if (emailAlreadyExists) {
-      throw new Error('Já existe uma conta cadastrada com este e-mail.');
-    }
-
-    const newUser: User = {
-      id: `${Date.now()}-${email}`,
-      firstName: data.firstName.trim(),
-      lastName: data.lastName.trim(),
+    const result = await supabaseService.signUp({
       email,
       password: data.password,
-      birthDate: data.birthDate.toISOString(),
-    };
+      nome: data.firstName.trim(),
+      sobrenome: data.lastName.trim(),
+      dataNascimento: birthDate,
+    });
 
-    const nextUsers = [...users, newUser];
-    await saveUsers(nextUsers);
-    await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+    if (!result.session) {
+      throw new Error(
+        'Conta criada. Confirme seu e-mail antes de entrar, se a confirmação estiver ativa no Supabase.',
+      );
+    }
+
+    setSession(result.session);
+    setUser(getAuthUser(result.session, result.profile));
   };
 
   const login = async (data: LoginData) => {
@@ -139,38 +154,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     validateRequired(data.password, 'Informe sua senha.');
 
     const email = normalizeEmail(data.email);
+    validateEmail(email);
 
-    if (!emailRegex.test(email)) {
-      throw new Error('Informe um e-mail válido.');
-    }
+    const result = await supabaseService.signIn({
+      email,
+      password: data.password,
+    });
 
-    const users = await readUsers();
-    const foundUser = users.find(
-      (storedUser) => storedUser.email === email && storedUser.password === data.password,
-    );
-
-    if (!foundUser) {
-      throw new Error('E-mail ou senha inválidos.');
-    }
-
-    await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(foundUser));
-    setUser(foundUser);
+    setSession(result.session);
+    setUser(getAuthUser(result.session, result.profile));
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_USER_KEY);
+    await supabaseService.signOut(session?.access_token);
+    setSession(null);
     setUser(null);
   };
 
   const value = useMemo(
     () => ({
       user,
+      session,
       isLoading,
       register,
       login,
       logout,
     }),
-    [user, isLoading],
+    [user, session, isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
