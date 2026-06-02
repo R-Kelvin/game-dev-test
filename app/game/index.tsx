@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SpriteKey } from './data/sprites';
 import { sprites } from './data/sprites';
 
+import { useAuth } from '@/contexts/auth';
 import {
   Animated,
   Dimensions,
@@ -27,6 +28,7 @@ const { width } = Dimensions.get('window');
 
 
 export default function Game() {
+  const { logout } = useAuth();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const fadeCena = useRef(new Animated.Value(0)).current;
   const spriteFade = useRef(new Animated.Value(0)).current;
@@ -39,7 +41,7 @@ export default function Game() {
 
   const isMobile = Platform.OS !== 'web';
 
-  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena69');
+  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena1');
   const [dialogoIndex, setDialogoIndex] = useState(0);
   const [textoVisivel, setTextoVisivel] = useState('');
   const [digitando, setDigitando] = useState(false);
@@ -822,6 +824,11 @@ export default function Game() {
     });
   };
 
+  const voltarMenu = async () => {
+    await logout();
+    router.replace('/');
+  };
+
   if (!assetsCarregados) {
     return (
       <View
@@ -1354,7 +1361,7 @@ export default function Game() {
         diminuirVolume={diminuirVolume}
         aumentarVolume={aumentarVolume}
         salvarJogo={salvarJogo}
-        voltarMenu={() => router.replace('/')}
+        voltarMenu={voltarMenu}
       />
 
       <Animated.View
