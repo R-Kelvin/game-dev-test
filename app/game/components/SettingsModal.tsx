@@ -1,8 +1,8 @@
 import {
-    Modal,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 type SettingsModalProps = {
@@ -67,7 +67,7 @@ export function SettingsModal({
               marginBottom: 8,
             }}
           >
-            Volume da música
+            Volume Geral
           </Text>
 
           <View

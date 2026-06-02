@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+import { useGameAudio } from './audio/useGameAudio';
 import type { SpriteKey } from './data/sprites';
 import { sprites } from './data/sprites';
 
@@ -39,12 +40,16 @@ export default function Game() {
 
   const isMobile = Platform.OS !== 'web';
 
-  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena69');
+  const [cenaAtual, setCenaAtual] = useState<CenaKey>('cena1');
   const [dialogoIndex, setDialogoIndex] = useState(0);
   const [textoVisivel, setTextoVisivel] = useState('');
   const [digitando, setDigitando] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
   const [volumeMusica, setVolumeMusica] = useState(60);
+
+  useGameAudio(cenaAtual, volumeMusica);
+
+
   const [mostrarFlashLimbo, setMostrarFlashLimbo] = useState(false);
   const [assetsCarregados, setAssetsCarregados] = useState(false);
 
@@ -99,6 +104,14 @@ export default function Game() {
   const cena = cenas[cenaAtual];
   const dialogos = cena.dialogos;
   const dialogoAtual = dialogos[dialogoIndex] as Dialogo;
+
+  useGameAudio(
+  cenaAtual,
+  volumeMusica,
+  dialogoAtual?.ambience,
+  dialogoAtual?.bgm,
+  dialogoAtual?.sfx
+);
 
   const spriteMobileBottom = -230;
   const amigaMobileBottom = -230;

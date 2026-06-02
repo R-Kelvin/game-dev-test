@@ -1,4 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Audio } from 'expo-av';
 import { useFonts } from 'expo-font';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -16,16 +17,21 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { bgmAssets } from '../game/audio/audioAssets';
+import { playClick } from '../game/audio/useSfx';
 
 export default function Home() {
   const [fontsLoaded] = useFonts({
     MoreSugar: require('../../assets/fonts/MoreSugar-Regular.ttf'),
   });
 
+  const menuMusicRef = useRef<Audio.Sound | null>(null);
+
+  const [volumeMusica, setVolumeMusica] = useState(60);
+
   const [cadastroAberto, setCadastroAberto] = useState(false);
   const [loginAberto, setLoginAberto] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
-  const [volumeMusica, setVolumeMusica] = useState(60);
   const [data, setData] = useState(new Date());
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [avisoOfflineAberto, setAvisoOfflineAberto] = useState(false);
@@ -63,9 +69,20 @@ export default function Home() {
     }))
   ).current;
 
-  const abrirJogo = () => {
-    router.replace('/game');
-  };
+  const abrirJogo = async () => {
+  if (menuMusicRef.current) {
+    for (let volume = volumeMusica; volume >= 0; volume -= 5) {
+      await menuMusicRef.current.setVolumeAsync(volume / 100);
+      await new Promise(resolve => setTimeout(resolve, 35));
+    }
+
+    await menuMusicRef.current.stopAsync();
+    await menuMusicRef.current.unloadAsync();
+    menuMusicRef.current = null;
+  }
+
+  router.replace('/game');
+};
 
   const girarEngrenagem = () => {
     rotateAnim.setValue(0);
@@ -75,6 +92,48 @@ export default function Home() {
       useNativeDriver: true,
     }).start();
   };
+
+  useEffect(() => {
+  if (menuMusicRef.current) {
+    menuMusicRef.current.setVolumeAsync(volumeMusica / 100);
+  }
+}, [volumeMusica]);
+
+
+
+  useEffect(() => {
+  let ativo = true;
+
+  async function startMenuMusic() {
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    if (!ativo) return;
+
+    const { sound } = await Audio.Sound.createAsync(
+      bgmAssets.menu,
+      {
+        isLooping: true,
+        volume: volumeMusica / 100,
+        shouldPlay: true,
+      }
+    );
+
+    menuMusicRef.current = sound;
+  }
+
+  startMenuMusic();
+
+  return () => {
+    ativo = false;
+
+    if (menuMusicRef.current) {
+      menuMusicRef.current.unloadAsync();
+      menuMusicRef.current = null;
+    }
+  };
+}, []);
+
+
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -535,6 +594,7 @@ export default function Home() {
 
       <TouchableOpacity
         onPress={() => {
+          playClick();
           girarEngrenagem();
           setConfigAberta(true);
         }}
@@ -916,7 +976,7 @@ criada como projeto desenvolvido para a disciplina de Mobile.
                 marginBottom: 8,
               }}
             >
-              Volume da música
+              Volume Geral
             </Text>
 
             <View

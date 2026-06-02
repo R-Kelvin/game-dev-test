@@ -3,7 +3,7 @@ export const ato2 = {
   background: require('../../../../assets/backgrounds/ato2/ato2cena1.png'),
   proxima: 'cena10',
   dialogos: [
-    { nome: '', texto: '*Já é quase hora de ir embora novamente.*' },
+    { nome: '', ambience: 'escola', bgm: 'alegriadois', texto: '*Já é quase hora de ir embora novamente.*' },
     { nome: '', texto: '*Olho para minhas colegas e as vejo conversando escondido da professora.*' },
     { nome: '', texto: '*Confesso que fiquei curiosa para saber do assunto.*' },
     { nome: '', texto: '*Elas parecem intrigadas com algo.*' },
@@ -62,7 +62,7 @@ export const ato2 = {
   proxima: 'cena11',
   dialogos: [
     { 
-      nome: '', 
+      nome: '', ambience: 'vento',
       texto: '*Saio conversando com minhas amigas sobre a lenda da cadeira.*', 
       manterSprites: ['rin_normal', 'misuki_normal'] 
     },
@@ -95,7 +95,7 @@ export const ato2 = {
     { nome: 'Aiko', texto: 'Então… tchau, meninas.', sprite: 'aiko_falando' },
     { nome: '', texto: '*Aceno.*', sprite: 'aiko_tchau' },
     { nome: '', texto: '*Viro de costas…*'},
-    { nome: '', texto: '*Mas ainda escuto um cochicho baixo.*' },
+    { nome: '', sfx: 'cochicho_distante', texto: '*Mas ainda escuto um cochicho baixo.*' },
     { nome: '', texto: '*Não dá pra entender direito o que dizem.*'},
     { nome: '', texto: '*…*'},
     { nome: '', texto: '*Mas tenho a sensação de que não era sobre a lenda.*'},
@@ -106,13 +106,13 @@ export const ato2 = {
     background: require('../../../../assets/backgrounds/PO2.png'),
     proxima: 'cena12',
     dialogos: [
-      { nome: '', texto: '*Depois de uma boa andada, chego na rua do ponto.*', sprite: 'aiko_seria' },
+      { nome: '', sfx: 'passos_afastando', texto: '*Depois de uma boa andada, chego na rua do ponto.*', sprite: 'aiko_seria' },
       { nome: '', texto: '*Confesso que fazer esse percurso a pé todo dia cansa.*', sprite: 'aiko_seria' },
       { nome: '', texto: '*Vou caminhando lentamente.*', sprite: 'aiko_seria' },
       { nome: '', texto: '*Tem uma mulher lá no ponto… A mesma de ontem.*', sprite: 'aiko_curiosa' },
       { nome: 'Aiko', texto: 'Ela pega ônibus todo dia nesse horário?', sprite: 'aiko_curiosa' },
       { nome: '', texto: '*Pelo menos sei que nunca estarei completamente sozinha andando essas horas na rua.*', sprite: 'aiko_sorrisoleve' },
-      { nome: '', texto: '*Um ônibus para em frente ao ponto de ônibus.*', sprite: 'aiko_seria' },
+      { nome: '', sfx: 'onibus_freio', texto: '*Um ônibus para em frente ao ponto de ônibus.*', sprite: 'aiko_seria' },
       { nome: '', texto: '*Passo lentamente pelo ponto de ônibus quando escuto uma voz feminina.*', sprite: 'aiko_seria' },
       { nome: 'Voz', texto: 'Você… me conhece?' },
       { nome: '', texto: '*Viro para trás, pronta para responder a pergunta.*', sprite: 'aiko_seria' },
@@ -143,7 +143,7 @@ export const ato2 = {
     background: require('../../../../assets/backgrounds/PO4.png'),
     proxima: 'cena12',
     dialogos: [
-      { nome: '', texto: '*Ela estava falando com um rapaz, alto, e bem vestido.*', sprite: 'homemponto_normal' },
+      { nome: '', sfx: 'distorcao', bgm: null, texto: '*Ela estava falando com um rapaz, alto, e bem vestido.*', sprite: 'homemponto_normal' },
       { nome: '', texto: '*Ela olha fixamente para ele.*', sprite: 'mulherponto_normal' },
       { nome: '', texto: '*Havia uma mala ao lado dela. Parecia pesada.*', sprite: 'mulherponto_normal' },
       { nome: 'Mulher', texto: 'Você... me conhece?', sprite: 'mulherponto_falando' },
@@ -172,11 +172,11 @@ export const ato2 = {
   background: require('../../../../assets/backgrounds/beco2.png'),
   proxima: 'cena13',
   dialogos: [
-    { nome: '', texto: '*Finalmente estou chegando.*', sprite: 'aiko_seria' },
+    { nome: '', sfx: 'passos_afastando', bgm: 'alegriadois', texto: '*Finalmente estou chegando.*', sprite: 'aiko_seria' },
 
     { nome: '', texto: '*Levo a mão até a bolsa e puxo a lanterna.*', sprite: 'aiko_mochila' },
 
-    { nome: '', texto: '*O beco continua escuro.*', sprite: 'aiko_apreensiva' },
+    { nome: '', sfx: 'lanterna_click', texto: '*O beco continua escuro.*', sprite: 'aiko_apreensiva' },
 
     { nome: '', texto: '*Como sempre.*', sprite: 'aiko_apreensiva' },
 
@@ -188,7 +188,7 @@ export const ato2 = {
 
     { nome: '', texto: '*Acho.*' },
 
-    { nome: '', texto: '*Continuo andando.*'},
+    { nome: '', sfx: 'passos_beco', texto: '*Continuo andando.*'},
 
     { nome: '', texto: '*…*'},
 
@@ -240,12 +240,12 @@ export const ato2 = {
 
     { nome: 'Mulher', texto: 'bre…' },
     {
-      nome: '',
+      nome: '', bgm: null,
       texto: '*Não consigo entender.*',
       background: require('../../../../assets/backgrounds/ato2/mulhernajanela2.png'),
     },
 
-    { nome: '', texto: '*A luz da casa dela parece falhar*' },
+    { nome: '', sfx: 'luz_falhando', texto: '*A luz da casa dela parece falhar*' },
 
     { nome: '', texto: '*E as palavras parecem atravessar o vidro…*' },
 
@@ -257,7 +257,7 @@ export const ato2 = {
 
     {
       nome: '',
-      texto: '*algo se move atrás dela.*',
+      sfx: 'impacto_terror', texto: '*algo se move atrás dela.*',
       background: require('../../../../assets/backgrounds/ato2/mulhernajanela3.png'),
     },
 
@@ -327,7 +327,7 @@ cena12_final: {
   dialogos: [
     { nome: '', texto: '*Meu corpo reage antes de mim.*' },
 
-    { nome: '', texto: '*Eu corro.*' },
+    { nome: '', sfx: 'corrida', texto: '*Eu corro.*' },
 
     { nome: '', texto: '*A lanterna treme na minha mão.*'},
 
@@ -347,7 +347,7 @@ cena12_final: {
     background: require('../../../../assets/backgrounds/lightshop.png'),
     proxima: 'cena14',
     dialogos: [
-      { nome: '', texto: '*Chego ofegante à loja de lâmpadas.*', sprite: 'aiko_apreensiva' },
+      { nome: '', bgm: 'alegriadois', ambience: null, sfx: 'sino_loja', texto: '*Chego ofegante à loja de lâmpadas.*', sprite: 'aiko_apreensiva' },
       { nome: 'Vendedor', texto: 'O que houve?', sprite: 'vendedor_serio' },
       { nome: '', texto: '*Tento controlar a respiração antes de responder.*', sprite: 'aiko_apreensiva' },
       { nome: 'Vendedor', texto: '…', sprite: 'vendedor_serio' },
@@ -359,7 +359,7 @@ cena12_final: {
       { nome: '', texto: '*Ele aponta para o banco em frente ao balcão.*', manterSprites: ['vendedor_explicando'] },
       { nome: '', texto: '*Eu obedeço, ainda com o frio na barriga por causa daquela mulher.*', sprite: 'aiko_timida' },
       { nome: '', texto: '*O vendedor fica em silêncio por alguns segundos.*', manterSprites: ['vendedor_serio'] },
-      { nome: '', texto: '*Só consigo ouvir minha própria respiração, ainda acelerada.*', sprite: 'aiko_timida' },
+      { nome: '', sfx: 'respiracao_ofegante', texto: '*Só consigo ouvir minha própria respiração, ainda acelerada.*', sprite: 'aiko_timida' },
       { nome: 'Vendedor', texto: 'Aiko…', sprite: 'vendedor_serio' },
       { nome: 'Vendedor', texto: 'Você sabe uma das coisas estranhas de manter essa loja aberta até essa hora?', sprite: 'vendedor_explicando' },
       { nome: '', texto: '*Presto atenção em cada palavra.*', sprite: 'aiko_curiosa' },
@@ -367,7 +367,7 @@ cena12_final: {
       { nome: 'Vendedor', texto: 'Tem coisas…', sprite: 'vendedor_serio' },
       { nome: 'Vendedor', texto: 'que só aparecem nesse horário.', sprite: 'vendedor_serio' },
       { nome: 'Aiko', texto: '…', sprite: 'aiko_bracoscruzados' },
-      { nome: '', texto: '*Ele estende o pote de balas enquanto fala.*', manterSprites: ['vendedor_explicando'] },
+      { nome: '', sfx: 'baleiro', texto: '*Ele estende o pote de balas enquanto fala.*', manterSprites: ['vendedor_explicando'] },
       { nome: '', texto: '*Pego as [COR], como sempre.*', sprite: 'aiko_seria', falaCorEscolhida: true },
       { nome: 'Vendedor', texto: 'Vou te contar uma coisa.', sprite: 'vendedor_serio' },
       { nome: '', texto: '*Ele olha para o chaveiro pendurado na minha bolsa… e depois para mim.*', manterSprites: ['vendedor_serio'] },
@@ -441,7 +441,7 @@ cena12_final: {
     background: require('../../../../assets/backgrounds/predionight.png'),
     proxima: 'cena15',
     dialogos: [
-      { nome: '', texto: '*Ainda não assimilei toda aquela história…*', sprite: 'aiko_seria' },
+      { nome: '', sfx: 'passos_afastando', texto: '*Ainda não assimilei toda aquela história…*', sprite: 'aiko_seria' },
       { nome: '', texto: '*Meu vizinho passa por mim novamente.*', sprite: 'aiko_sideeye' },
       { nome: '', texto: '*Ele parece mais irritado do que antes.*', manterSprites: ['vizinho1_serio'] },
       { nome: 'Vizinho', texto: 'Não para…', sprite: 'vizinho1_irritado' },
@@ -462,7 +462,7 @@ cena12_final: {
     background: require('../../../../assets/backgrounds/aikoshouse2.png'),
     proxima: 'cena16',
     dialogos: [
-      { nome: '', texto: '*Abro a porta devagar.*' },
+      { nome: '', sfx: 'porta_casa', texto: '*Abro a porta devagar.*' },
       { nome: '', texto: '*A madeira range baixo.*'},
       { nome: '', texto: '*A casa continua escura.*' },
       { nome: '', texto: '*A única luz vem da vela sobre a mesa da sala.*' },
@@ -571,13 +571,13 @@ cena12_final: {
     proxima: 'cena20',
     dialogos: [
 
-      { nome: '', texto: '*Dou alguns passos em direção ao corredor.*' },
+      { nome: '', sfx: 'passos_afastando', texto: '*Dou alguns passos em direção ao corredor.*' },
       { nome: '', texto: '*Mas paro.*' },
       { nome: 'Aiko', texto: 'Mãe…', sprite: 'aiko_timida' },
       { nome: 'Mãe', texto: 'Sim?', sprite: 'mae_normal' },
       { nome: 'Aiko', texto: 'Faz tempo que a gente não janta junto, né?', sprite: 'aiko_timida' },
       { nome: '', texto: '*Ela fica em silêncio.*', manterSprites: ['mae_normal'] },
-      { nome: '', texto: '*A chama da vela estala baixo.*', manterSprites: ['mae_normal'] },
+      { nome: '', sfx: 'vela_estalo', texto: '*A chama da vela estala baixo.*', manterSprites: ['mae_normal'] },
       { nome: 'Mãe', texto: 'É…', sprite: 'mae_falando' },
       { nome: 'Mãe', texto: 'A semana anda corrida.', sprite: 'mae_falando' },
       { nome: 'Aiko', texto: 'Boa noite, mãe.', sprite: 'aiko_falando' },
@@ -593,7 +593,7 @@ cena12_final: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', bgm: 'alegria', ambience: 'escola',
       texto: '*…*',
       efeito: 'fadeSlow',
     },
@@ -708,7 +708,7 @@ cena12_final: {
   background: require('../../../../assets/backgrounds/aikoerinentreolhando.png'),
   proxima: 'cena30',
   dialogos: [
-    { nome: '', texto: '*Nós duas nos olhamos como se fôssemos duas crianças cujo pirulito acabou de ser roubado.*' },
+    { nome: '', sfx: 'cadeiras_arrastando', texto: '*Nós duas nos olhamos como se fôssemos duas crianças cujo pirulito acabou de ser roubado.*' },
 
     { nome: '', texto: '*Seria um momento engraçado…*' },
 
@@ -733,17 +733,13 @@ cena12_final: {
   dialogos: [
     {
       nome: '',
-      texto: '*A aula acaba e, pouco depois, chega o horário do almoço.*',
+      sfx: 'refeitorio_ambiente', texto: '*A aula acaba e, pouco depois, chega o horário do almoço.*',
     },
     {
       nome: '',
       texto: '*Como sempre, cada um pega sua bandeja e espera na fila da merenda.*',
     },
-    {
-      nome: 'Misuki',
-      texto: 'Meninas… me desculpem…',
-      
-    },
+   
     ],
   },
   cena31: {
@@ -1061,7 +1057,7 @@ cena33_continua: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', sfx: 'cadeiras_arrastando', 
       texto: '*Presto atenção na aula grande parte do tempo.*',
     },
 
@@ -1150,7 +1146,7 @@ cena33_continua: {
     dialogos: [
 
       {
-        nome: '',
+        nome: '', ambience: 'tensao', 
         texto: '*Saio conversando com as meninas sobre o dia.*',
       },
 
@@ -1233,7 +1229,7 @@ cena33_continua: {
     dialogos: [
 
       {
-        nome: 'Aiko',
+        nome: 'Aiko', ambience: 'vento',
         texto: 'Bom, meninas… então… vou indo.',
         sprite: 'aiko_tchau',
       },
@@ -1360,7 +1356,7 @@ cena33_continua: {
       },
       {
         nome: 'Misuki',
-        texto: 'Dependendo do beco, talvez atravesse mesmo.',
+        texto: 'Dependendo do lugar, talvez atravesse mesmo.',
         manterSprites: ['rin_normal', 'misuki_falando'],
       },
       {
@@ -1419,7 +1415,7 @@ cena33_continua: {
     dialogos: [
 
       {
-        nome: '',
+        nome: '', bgm: 'tensao', sfx: 'passos_afastando',
         texto: '*Nós andamos normalmente, conversando sobre tudo que quase nem percebi que já estamos chegando.*',
       },
 
@@ -1482,12 +1478,12 @@ cena33_continua: {
     dialogos: [
 
       {
-        nome: '',
+        nome: '', bgm: null, 
         texto: '*Passo mais devagar por alguns segundos.*',
       },
 
       {
-        nome: '',
+        nome: '', sfx: 'distorcao',
         texto: '*A mulher continua parada.*',
         sprite: 'mulherponto_normal',
       },
@@ -1598,7 +1594,7 @@ cena44: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', bgm: 'tensao', sfx: 'passos_afastando',
       texto: '*Na entrada do beco, as meninas parecem um pouco chocadas.*',
     },
 
@@ -1721,8 +1717,8 @@ cena44: {
     },
 
     {
-      nome: '',
-      texto: '*Elas pegam outro caminho.*',
+      nome: '', bgm: null,
+      sfx: 'passos_se_afastando', texto: '*Elas pegam outro caminho.*',
     },
 
     {
@@ -1772,7 +1768,7 @@ cena44: {
 
     {
       nome: '',
-      texto: '*Levo a mão até a mochila e puxo minha lanterna.*',
+      sfx: 'lanterna_click', texto: '*Levo a mão até a mochila e puxo minha lanterna.*',
       sprite: 'aikoseria_lanterna',
     },
 
@@ -1817,7 +1813,7 @@ cena45: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', sfx: 'passos_afastando', 
       texto: '*Aqui estou eu novamente.*',
       sprite: 'aikoseria_lanterna',
     },
@@ -2023,7 +2019,7 @@ cena46: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', bgm: 'tensao', ambience: null, sfx: 'sino_loja',
       texto: '*Chego na loja com o mesmo propósito de sempre.*',
     },
 
@@ -2348,7 +2344,7 @@ cena46_final: {
     },
 
     {
-      nome: '',
+      nome: '', sfx: 'sino_loja',
       texto: '*Como se simplesmente tivesse desaparecido.*',
     },
   ],
@@ -2360,7 +2356,7 @@ cena47: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', sfx: 'passos_afastando', 
       texto: '*Finalmente estou chegando em casa.*',
       sprite: 'aiko_seria',
     },
@@ -2388,7 +2384,7 @@ cena48: {
   dialogos: [
 
     {
-      nome: '',
+      nome: '', sfx: 'porta_casa',
       texto: '*Abro a porta.*',
     },
 

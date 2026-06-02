@@ -3,7 +3,7 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/ato1/apreseinicial.png'),
     proxima: 'cena2',
     dialogos: [
-      { nome: '', texto: '*A luz do fim de tarde entra pela janela, desenhando sombras longas sobre as mesas.*' },
+      { nome: '', ambience: 'escola', bgm: 'alegria', texto: '*A luz do fim de tarde entra pela janela, desenhando sombras longas sobre as mesas.*' },
       { nome: '', texto: '*O barulho da aula parece distante… como se não fosse comigo.*' },
       { nome: '', texto: 'Mais um dia acabando...' },
       { nome: '', texto: '*Meu olhar escapa para fora da sala.*' },
@@ -27,7 +27,7 @@ export const ato1 = {
       { nome: '', texto: 'Uma adulta com certeza.' },
       { nome: '', texto: 'Com um caminho definido.' },
       { nome: '', texto: 'Sem precisar pensar tanto.' },
-      { nome: '', texto: '*Um som mais alto invade a sala — cadeiras sendo arrastadas.*' },
+      { nome: '', sfx: 'cadeiras_arrastando', texto: '*Um som mais alto invade a sala — cadeiras sendo arrastadas.*' },
       { nome: '', texto: '*Conversas começam a surgir ao redor.*' },
       { nome: '', texto: 'A aula acabou...' },
       { nome: '', texto: 'E eu nem percebi.' },
@@ -47,7 +47,7 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/saidaescola.png'),
     proxima: 'cena3',
     dialogos: [
-      { nome: '', texto: '*Saio da escola junto com os últimos alunos.*' },
+      { nome: '', ambience: 'vento', texto: '*Saio da escola junto com os últimos alunos.*' },
       { nome: '', texto: '*O céu já está escurecendo.*' },
       { nome: '', texto: '*A luz do fim de tarde desapareceu quase sem que eu percebesse.*' },
       { nome: '', texto: '*Alguns grupos conversam perto do portão.*' },
@@ -149,7 +149,7 @@ export const ato1 = {
       },
       { nome: 'Misuki', texto: 'Até amanhã, Aiko.', sprite: 'misuki_tchau' },
       { nome: 'Aiko', texto: 'Até.', sprite: 'aiko_tchau' },
-      { nome: '', texto: '*Começo a andar.*' },
+      { nome: '', sfx: 'passos_afastando', texto: '*Começo a andar.*' },
       { nome: '', texto: '*Depois de alguns passos…*' },
       { nome: '', texto: '*Sinto que ainda estão me olhando.*' },
       { nome: '', texto: '*Como se quisessem dizer mais alguma coisa.*' },
@@ -163,11 +163,11 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/PO2.png'),
     proxima: 'cena4',
     dialogos: [
-      { nome: '', texto: '*A rua está mais silenciosa agora.*' },
+      { nome: '', sfx: 'passos_afastando', texto: '*A rua está mais silenciosa agora.*' },
       { nome: '', texto: '*O movimento da escola ficou para trás.*' },
       { nome: '', texto: '*As luzes dos postes refletem no asfalto molhado.*' },
       { nome: '', texto: '*Um ônibus se aproxima ao longe.*' },
-      { nome: '', texto: '*O som do motor quebra o silêncio por alguns segundos.*' },
+      { nome: '', sfx: 'onibus_freio', texto: '*O som do motor quebra o silêncio por alguns segundos.*' },
       { nome: 'Aiko', texto: 'Ainda passa ônibus essa hora…' },
       { nome: '', texto: '*Diminuo o passo ao me aproximar do ponto.*' },
       { nome: '', texto: '*Tem apenas uma mulher lá…*' },
@@ -183,7 +183,7 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/beco2.png'),
     proxima: 'cena5',
     dialogos: [
-      { nome: '', texto: '*O caminho vai ficando mais vazio.*', sprite: 'aiko_seria'  },
+      { nome: '', sfx: 'passos_afastando', texto: '*O caminho vai ficando mais vazio.*', sprite: 'aiko_seria'  },
       { nome: '', texto: '*As casas ficam mais próximas umas das outras.*' },
       { nome: '', texto: '*As luzes… mais fracas.*' },
       { nome: '', texto: '*Paro por um instante na entrada do beco.*' },
@@ -193,11 +193,11 @@ export const ato1 = {
       { nome: '', texto: '*Escuro demais.*'},
       { nome: '', texto: '*Levo a mão até a bolsa.*'},
       { nome: '', texto: '*Tiro a lanterna.*'},
-      { nome: '', texto: '*Pressiono o botão.*'},
+      { nome: '', sfx: 'lanterna_click', texto: '*Pressiono o botão.*'},
       { nome: '', texto: '*A luz acende… fraca.*' },
-      { nome: '', texto: '*Pisca uma vez.*'},
+      { nome: '', sfx: 'lanterna_falhando', texto: '*Pisca uma vez.*'},
       { nome: 'Aiko', texto: 'De novo não…' },
-      { nome: '', texto: '*Dou uma leve batida nela.*'},
+      { nome: '', sfx: 'puxao',  texto: '*Dou uma leve batida nela.*'},
       { nome: '', texto: '*A luz estabiliza.*' },
       { nome: 'Aiko', texto: '…', sprite: 'aiko_apreensiva' },
       { nome: '', texto: '*Aponto a lanterna para dentro do beco.*' },
@@ -215,7 +215,7 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/beco1.png'),
     proxima: 'cena6',
     dialogos: [
-      { nome: '', texto: '*No final do beco…*' },
+      { nome: '', sfx: 'passos_afastando', texto: '*No final do beco…*' },
       { nome: '', texto: '*A luz aparece.*' },
       { nome: '', texto: '*Quente.*' },
       { nome: '', texto: '*Por sorte, essa loja fecha tarde.*' },
@@ -226,8 +226,8 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/lightshop.png'),
     proxima: 'cena7',
     dialogos: [
-      { nome: '', texto: '*Empurro a porta.*' },
-      { nome: '', texto: '*Um pequeno sino toca.*' },
+      { nome: '', ambience: null, texto: '*Empurro a porta.*' },
+      { nome: '', sfx: 'sino_loja', texto: '*Um pequeno sino toca.*' },
       { nome: '', texto: '*O calor me envolve imediatamente.*' },
       { nome: '', texto: '*As luzes preenchem todo o espaço.*' },
       { nome: '', texto: '*É difícil olhar para um ponto só.*' },
@@ -316,7 +316,7 @@ export const ato1 = {
         manterSprites: ['vendedor_serio'],
       },
       { nome: '', texto: '*Dou meia-volta e caminho até a saída.*' },
-      { nome: '', texto: '*O sino toca novamente quando empurro a porta.*' },
+      { nome: '', sfx: 'sino_loja', texto: '*O sino toca novamente quando empurro a porta.*' },
       { nome: '', texto: '*E o frio da rua me alcança de novo.*' },
     ]
     },
@@ -325,7 +325,7 @@ export const ato1 = {
     background: require('../../../../assets/backgrounds/predionight.png'),
     proxima: 'cena8',
     dialogos: [
-      { nome: '', texto: 'Estou finalmente chegando em casa… quando alguém me chama.'},
+      { nome: '', sfx: 'passos_afastando', texto: 'Estou finalmente chegando em casa… quando alguém me chama.'},
       { nome: 'Vizinho', texto: 'Ei, garota… Você viu um cachorro latindo muito por aqui?', sprite: 'vizinho1_falando' },
       { nome: 'Vizinho', texto: 'Acho que ele veio nesta direção…', sprite: 'vizinho1_serio' },
       { nome: 'Vizinho', texto: 'Eu não consigo dormir por causa do latido desse cachorro!', sprite: 'vizinho1_irritado' },
@@ -348,7 +348,7 @@ export const ato1 = {
   background: require('../../../../assets/backgrounds/aikoshouse2.png'),
   proxima: 'cena9',
   dialogos: [
-    { nome: '', texto: '*Abro gentilmente a porta.*' },
+    { nome: '', ambience: null, sfx: 'porta_casa', texto: '*Abro gentilmente a porta.*' },
     { nome: 'Aiko', texto: 'Mamãe? Cheguei.', sprite: 'aiko_falando' },
 
     { nome: '', texto: '*Digo fechando a porta, tentando não fazer barulho.*' },
@@ -356,7 +356,7 @@ export const ato1 = {
     { nome: '', texto: '*Como eu já esperava.*' },
 
     { nome: '', texto: '*A única luz vem de uma vela… acesa sobre a mesa da sala.*' },
-    { nome: '', texto: '*A chama balança levemente.*' },
+    { nome: '', sfx: 'vela_suave', texto: '*A chama balança levemente.*' },
 
     { nome: 'Mãe', texto: 'Oi, filha. Você demorou hoje.', sprite: 'mae_falando'},
 
