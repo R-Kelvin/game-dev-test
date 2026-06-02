@@ -17,10 +17,13 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+
+import { useAuth } from '@/contexts/auth';
 import { bgmAssets } from '../game/audio/audioAssets';
 import { playClick } from '../game/audio/useSfx';
 
 export default function Home() {
+  const { login, register, user } = useAuth();
   const [fontsLoaded] = useFonts({
     MoreSugar: require('../../assets/fonts/MoreSugar-Regular.ttf'),
   });
@@ -32,10 +35,23 @@ export default function Home() {
   const [cadastroAberto, setCadastroAberto] = useState(false);
   const [loginAberto, setLoginAberto] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
-  const [data, setData] = useState(new Date());
+  const [data, setData] = useState<Date | null>(null);
   const [mostrarPicker, setMostrarPicker] = useState(false);
   const [avisoOfflineAberto, setAvisoOfflineAberto] = useState(false);
   const [sobreAberto, setSobreAberto] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginSenha, setLoginSenha] = useState('');
+  const [cadastroNome, setCadastroNome] = useState('');
+  const [cadastroSobrenome, setCadastroSobrenome] = useState('');
+  const [cadastroEmail, setCadastroEmail] = useState('');
+  const [cadastroSenha, setCadastroSenha] = useState('');
+  const [cadastroConfirmarSenha, setCadastroConfirmarSenha] = useState('');
+  const [seletorDataAberto, setSeletorDataAberto] = useState(false);
+  const [diaNascimento, setDiaNascimento] = useState(1);
+  const [mesNascimento, setMesNascimento] = useState(1);
+  const [anoNascimento, setAnoNascimento] = useState(2000);
+  const [mensagemLogin, setMensagemLogin] = useState('');
+  const [mensagemCadastro, setMensagemCadastro] = useState('');
 
   const isMobile = Platform.OS !== 'web';
   const { width } = useWindowDimensions();
@@ -81,7 +97,63 @@ export default function Home() {
     menuMusicRef.current = null;
   }
 
-  router.replace('/game');
+    if (user) {
+    router.replace('/game');
+      return;
+    }
+
+    setLoginAberto(true);
+  };
+
+  const fecharLogin = () => {
+    setLoginAberto(false);
+    setMensagemLogin('');
+  };
+
+  const fecharCadastro = () => {
+    setCadastroAberto(false);
+    setMensagemCadastro('');
+  };
+
+  const handleLogin = async () => {
+    setMensagemLogin('');
+
+    try {
+      await login({
+        email: loginEmail,
+        password: loginSenha,
+      });
+      setLoginSenha('');
+      setLoginAberto(false);
+      router.replace('/game');
+    } catch (error) {
+      setMensagemLogin(error instanceof Error ? error.message : 'Não foi possível entrar.');
+    }
+  };
+
+  const handleCadastro = async () => {
+    setMensagemCadastro('');
+
+    try {
+      await register({
+        firstName: cadastroNome,
+        lastName: cadastroSobrenome,
+        email: cadastroEmail,
+        password: cadastroSenha,
+        confirmPassword: cadastroConfirmarSenha,
+        birthDate: data,
+      });
+      setCadastroNome('');
+      setCadastroSobrenome('');
+      setCadastroEmail('');
+      setCadastroSenha('');
+      setCadastroConfirmarSenha('');
+      setData(null);
+      setCadastroAberto(false);
+      router.replace('/game');
+    } catch (error) {
+      setMensagemCadastro(error instanceof Error ? error.message : 'Não foi possível criar a conta.');
+    }
 };
 
   const girarEngrenagem = () => {
@@ -364,6 +436,18 @@ export default function Home() {
     fontSize: isMobile ? 12 : 14,
     borderWidth: 1,
     borderColor: 'rgba(190, 130, 255, 0.35)',
+  };
+
+  const anoAtual = new Date().getFullYear();
+  const mesesNascimento = Array.from({ length: 12 }, (_, index) => index + 1);
+  const anosNascimento = Array.from({ length: 121 }, (_, index) => anoAtual - index);
+  const diasNoMes = new Date(anoNascimento, mesNascimento, 0).getDate();
+  const diasNascimento = Array.from({ length: diasNoMes }, (_, index) => index + 1);
+  const dataNascimentoTexto = data ? data.toLocaleDateString() : 'Data de nascimento';
+
+  const confirmarDataNascimento = () => {
+    setData(new Date(anoNascimento, mesNascimento - 1, diaNascimento));
+    setSeletorDataAberto(false);
   };
 
   const botaoBase = {
@@ -1082,17 +1166,40 @@ criada como projeto desenvolvido para a disciplina de Mobile.
               ENTRAR
             </Text>
 
-            <TextInput placeholder="E-mail" placeholderTextColor="#aaa" style={inputStyle} />
+            <TextInput
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={setLoginEmail}
+              placeholder="E-mail"
+              placeholderTextColor="#aaa"
+              style={inputStyle}
+              value={loginEmail}
+            />
 
             <TextInput
+              onChangeText={setLoginSenha}
               placeholder="Senha"
               placeholderTextColor="#aaa"
               secureTextEntry
               style={inputStyle}
+              value={loginSenha}
             />
 
+            {!!mensagemLogin && (
+              <Text
+                style={{
+                  color: '#ffd4e1',
+                  fontSize: isMobile ? 11 : 13,
+                  marginBottom: 10,
+                  textAlign: 'center',
+                }}
+              >
+                {mensagemLogin}
+              </Text>
+            )}
+
             <TouchableOpacity
-              onPress={abrirJogo}
+              onPress={handleLogin}
               style={{
                 backgroundColor: '#965fbe',
                 padding: isMobile ? 10 : 14,
@@ -1105,7 +1212,7 @@ criada como projeto desenvolvido para a disciplina de Mobile.
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setLoginAberto(false)}>
+            <TouchableOpacity onPress={fecharLogin}>
               <Text style={{ color: '#bbb', textAlign: 'center', marginTop: 12 }}>
                 Fechar
               </Text>
@@ -1152,31 +1259,65 @@ criada como projeto desenvolvido para a disciplina de Mobile.
                 CRIAR CONTA
               </Text>
 
-              <TextInput placeholder="Nome" placeholderTextColor="#aaa" style={inputStyle} />
-              <TextInput placeholder="Sobrenome" placeholderTextColor="#aaa" style={inputStyle} />
-              <TextInput placeholder="E-mail" placeholderTextColor="#aaa" style={inputStyle} />
+              <TextInput
+                onChangeText={setCadastroNome}
+                placeholder="Nome"
+                placeholderTextColor="#aaa"
+                style={inputStyle}
+                value={cadastroNome}
+              />
+              <TextInput
+                onChangeText={setCadastroSobrenome}
+                placeholder="Sobrenome"
+                placeholderTextColor="#aaa"
+                style={inputStyle}
+                value={cadastroSobrenome}
+              />
+              <TextInput
+                autoCapitalize="none"
+                keyboardType="email-address"
+                onChangeText={setCadastroEmail}
+                placeholder="E-mail"
+                placeholderTextColor="#aaa"
+                style={inputStyle}
+                value={cadastroEmail}
+              />
 
               <TextInput
+                onChangeText={setCadastroSenha}
                 placeholder="Senha"
                 placeholderTextColor="#aaa"
                 secureTextEntry
                 style={inputStyle}
+                value={cadastroSenha}
               />
 
               <TextInput
+                onChangeText={setCadastroConfirmarSenha}
                 placeholder="Confirmar senha"
                 placeholderTextColor="#aaa"
                 secureTextEntry
                 style={inputStyle}
+                value={cadastroConfirmarSenha}
               />
 
-              <TouchableOpacity onPress={() => setMostrarPicker(true)} style={inputStyle}>
-                <Text style={{ color: '#aaa' }}>{data.toLocaleDateString()}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  if (Platform.OS === 'web') {
+                    setSeletorDataAberto(true);
+                    return;
+                  }
+
+                  setMostrarPicker(true);
+                }}
+                style={inputStyle}
+              >
+                <Text style={{ color: '#aaa' }}>{dataNascimentoTexto}</Text>
               </TouchableOpacity>
 
               {mostrarPicker && (
                 <DateTimePicker
-                  value={data}
+                  value={data ?? new Date()}
                   mode="date"
                   display="default"
                   onChange={(event, selectedDate) => {
@@ -1186,8 +1327,21 @@ criada como projeto desenvolvido para a disciplina de Mobile.
                 />
               )}
 
+              {!!mensagemCadastro && (
+                <Text
+                  style={{
+                    color: '#ffd4e1',
+                    fontSize: isMobile ? 11 : 13,
+                    marginBottom: 10,
+                    textAlign: 'center',
+                  }}
+                >
+                  {mensagemCadastro}
+                </Text>
+              )}
+
               <TouchableOpacity
-                onPress={abrirJogo}
+                onPress={handleCadastro}
                 style={{
                   backgroundColor: '#965fbe',
                   padding: isMobile ? 10 : 14,
@@ -1200,13 +1354,157 @@ criada como projeto desenvolvido para a disciplina de Mobile.
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => setCadastroAberto(false)}>
+              <TouchableOpacity onPress={fecharCadastro}>
                 <Text style={{ color: '#bbb', textAlign: 'center', marginTop: 12 }}>
                   Fechar
                 </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* SELETOR DE DATA DE NASCIMENTO WEB */}
+      <Modal visible={seletorDataAberto} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.78)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 430,
+              backgroundColor: 'rgba(18, 8, 32, 0.98)',
+              borderRadius: 22,
+              borderWidth: 1,
+              borderColor: 'rgba(190, 130, 255, 0.65)',
+              padding: 20,
+            }}
+          >
+            <Text
+              style={{
+                color: '#f2e9ff',
+                fontSize: 22,
+                fontWeight: 'bold',
+                marginBottom: 16,
+                textAlign: 'center',
+              }}
+            >
+              Data de nascimento
+            </Text>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#d8c8ff', textAlign: 'center', marginBottom: 8 }}>
+                  Dia
+                </Text>
+                <ScrollView style={{ maxHeight: 210 }}>
+                  {diasNascimento.map((dia) => (
+                    <TouchableOpacity
+                      key={dia}
+                      onPress={() => setDiaNascimento(dia)}
+                      style={{
+                        paddingVertical: 9,
+                        borderRadius: 10,
+                        marginBottom: 6,
+                        backgroundColor:
+                          dia === diaNascimento ? '#965fbe' : 'rgba(255,255,255,0.07)',
+                      }}
+                    >
+                      <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                        {String(dia).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#d8c8ff', textAlign: 'center', marginBottom: 8 }}>
+                  Mês
+                </Text>
+                <ScrollView style={{ maxHeight: 210 }}>
+                  {mesesNascimento.map((mes) => (
+                    <TouchableOpacity
+                      key={mes}
+                      onPress={() => {
+                        setMesNascimento(mes);
+                        setDiaNascimento((dia) =>
+                          Math.min(dia, new Date(anoNascimento, mes, 0).getDate()),
+                        );
+                      }}
+                      style={{
+                        paddingVertical: 9,
+                        borderRadius: 10,
+                        marginBottom: 6,
+                        backgroundColor:
+                          mes === mesNascimento ? '#965fbe' : 'rgba(255,255,255,0.07)',
+                      }}
+                    >
+                      <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                        {String(mes).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={{ flex: 1.2 }}>
+                <Text style={{ color: '#d8c8ff', textAlign: 'center', marginBottom: 8 }}>
+                  Ano
+                </Text>
+                <ScrollView style={{ maxHeight: 210 }}>
+                  {anosNascimento.map((ano) => (
+                    <TouchableOpacity
+                      key={ano}
+                      onPress={() => {
+                        setAnoNascimento(ano);
+                        setDiaNascimento((dia) =>
+                          Math.min(dia, new Date(ano, mesNascimento, 0).getDate()),
+                        );
+                      }}
+                      style={{
+                        paddingVertical: 9,
+                        borderRadius: 10,
+                        marginBottom: 6,
+                        backgroundColor:
+                          ano === anoNascimento ? '#965fbe' : 'rgba(255,255,255,0.07)',
+                      }}
+                    >
+                      <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                        {ano}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={confirmarDataNascimento}
+              style={{
+                backgroundColor: '#965fbe',
+                paddingVertical: 13,
+                borderRadius: 12,
+                marginBottom: 10,
+              }}
+            >
+              <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                CONFIRMAR DATA
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setSeletorDataAberto(false)}>
+              <Text style={{ color: '#bbb', textAlign: 'center', marginTop: 6 }}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>

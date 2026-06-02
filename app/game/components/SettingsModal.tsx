@@ -151,7 +151,7 @@ export function SettingsModal({
                 fontWeight: 'bold',
               }}
             >
-              Voltar ao menu principal
+              Sair da conta e voltar ao menu
             </Text>
           </TouchableOpacity>
 
